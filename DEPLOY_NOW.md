@@ -18,8 +18,8 @@ Open Terminal and run:
 cd "/Users/brandonin/IMEI-ASN-Match"
 
 # Update all occurrences of old name
-find . -type f \( -name "*.md" -o -name "*.txt" \) -exec sed -i '' 's/wrma-inbound-processor/imei-asn-match/g' {} +
-find . -type f \( -name "*.md" -o -name "*.txt" \) -exec sed -i '' 's/WRMA Inbound Processor/IMEI\/ASN Match/g' {} +
+find . -type f \( -name "*.md" -o -name "*.txt" \) -exec sed -i '' 's/imei-asn-match/imei-asn-match/g' {} +
+find . -type f \( -name "*.md" -o -name "*.txt" \) -exec sed -i '' 's/IMEI/ASN Match/IMEI\/ASN Match/g' {} +
 
 echo "✅ Documentation updated!"
 ```
@@ -192,8 +192,8 @@ git remote -v
 ## What's Different From Old Version?
 
 ### Old Name
-- WRMA Inbound Processor
-- wrma-inbound-processor
+- IMEI/ASN Match
+- imei-asn-match
 
 ### New Name
 - IMEI/ASN Match
