@@ -749,6 +749,8 @@ def main():
                         height=300,
                         column_config=config_model_gb
                     )
+                    # Copy button
+                    components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=50)
                     # Download button
                     csv_data = model_gb_output.to_csv(index=False)
                     st.download_button(
@@ -761,7 +763,7 @@ def main():
                     )
 
             with col2:
-                st.markdown("#### 📱 MODEL")
+                st.markdown("#### 📱 MODEL + QTY")
                 if model_only_output is not None:
                     config_model = {
                         "MODEL": st.column_config.TextColumn("MODEL", width=120),
@@ -774,6 +776,8 @@ def main():
                         height=300,
                         column_config=config_model
                     )
+                    # Copy button
+                    components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=50)
                     # Download button
                     csv_data = model_only_output.to_csv(index=False)
                     st.download_button(
@@ -786,7 +790,7 @@ def main():
                     )
 
             with col3:
-                st.markdown("#### 🏷️ GRADE MIX")
+                st.markdown("#### 🏷️ Grade Breakdown")
                 if grade_mix_output is not None:
                     config_grade = {
                         "GRADE": st.column_config.TextColumn("GRADE", width=60),
@@ -801,12 +805,14 @@ def main():
                         height=300,
                         column_config=config_grade
                     )
+                    # Copy button
+                    components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=50)
                     # Download button
                     csv_data = grade_mix_output.to_csv(index=False)
                     st.download_button(
                         "📥 Download",
                         data=csv_data,
-                        file_name=f"{selected_invoice}_grade_mix.csv",
+                        file_name=f"{selected_invoice}_grade_breakdown.csv",
                         mime="text/csv",
                         key=f"dl_grade_{selected_invoice}",
                         use_container_width=True
