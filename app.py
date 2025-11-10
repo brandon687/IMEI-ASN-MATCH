@@ -738,36 +738,89 @@ def main():
             has_imei = recon and recon.imei_serial_uploaded
 
             # Header
-            col1, col2, col3 = st.columns([2, 1, 1])
+            col1, col2 = st.columns([3, 1])
             with col1:
                 st.markdown(f"### 📦 {selected_invoice}")
             with col2:
                 if has_asn:
-                    st.success("✅ ASN")
+                    st.success("✅ ASN Uploaded")
                 else:
                     st.warning("⚠️ No ASN")
-            with col3:
-                if has_imei:
-                    st.success("✅ IMEI")
-                else:
-                    st.warning("⚠️ No IMEI")
 
             st.markdown("---")
 
-            # Metrics
-            col1, col2, col3 = st.columns(3)
+            # Metrics and Order Details Side by Side
+            col1, col2 = st.columns([2, 3])
+
             with col1:
-                st.metric("Total Units", f"{order_qty:,}")
+                # Compact metrics
+                st.markdown("### 📊 Summary")
+
+                # Total Units
+                st.markdown(f"""
+                <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2E86AB;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.85rem;">Total Units</p>
+                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # Unique Models
+                st.markdown(f"""
+                <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #A23B72;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.85rem;">Unique Models</p>
+                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{unique_models}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # IMEI Comparison: ON ASN vs EXPECTED
+                if has_asn and recon.asn_file_data:
+                    imeis, imei_count, _ = extract_imeis_from_file(recon.asn_file_data, recon.asn_filename)
+                    on_asn_count = imei_count
+                else:
+                    on_asn_count = 0
+
+                expected_count = order_qty
+
+                # Determine color based on match
+                if on_asn_count == expected_count:
+                    border_color = "#06D6A0"  # Green - match
+                    status_icon = "✅"
+                elif on_asn_count > 0:
+                    border_color = "#F18F01"  # Orange - partial
+                    status_icon = "⚠️"
+                else:
+                    border_color = "#C73E1D"  # Red - missing
+                    status_icon = "❌"
+
+                st.markdown(f"""
+                <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid {border_color};">
+                    <p style="color: #6C757D; margin: 0 0 0.5rem 0; font-size: 0.85rem;">{status_icon} IMEI Comparison</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                        <span style="font-size: 0.9rem; color: #6C757D;">ON ASN:</span>
+                        <span style="font-size: 1.3rem; font-weight: 700;">{on_asn_count:,}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 0.9rem; color: #6C757D;">EXPECTED:</span>
+                        <span style="font-size: 1.3rem; font-weight: 700;">{expected_count:,}</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
             with col2:
-                st.metric("Unique Models", unique_models)
-            with col3:
-                st.metric("IMEI Count", f"{recon.imei_serial_count:,}" if has_imei and recon.imei_serial_count else "N/A")
+                # Compact Order Details Card
+                st.markdown("### 📋 Expected Order Details")
+                st.markdown("""
+                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #DEE2E6; max-height: 300px; overflow-y: auto;">
+                """, unsafe_allow_html=True)
 
-            st.markdown("---")
+                st.dataframe(
+                    order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
+                    hide_index=True,
+                    use_container_width=True,
+                    height=250
+                )
 
-            # Order table
-            st.markdown("#### 📋 Expected Order Details")
-            st.dataframe(order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']], hide_index=True, use_container_width=True)
+                st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown("---")
 
@@ -831,11 +884,10 @@ def main():
                             use_container_width=True
                         )
                     else:
-                        st.warning("⚠️ No IMEIs found in ASN file")
-                        st.info("IMEIs must be 15 digits starting with 35")
+                        st.info("📄 No IMEIs found. Upload ASN file with IMEI/Serial columns.")
                 else:
-                    st.info("📄 Upload ASN file first to extract IMEIs")
-                    st.caption("IMEIs will be automatically extracted from columns like: SERIAL, IMEI, Serial No, etc.")
+                    st.info("📄 Upload ASN file to extract IMEIs")
+                    st.caption("Supports: Excel (.xlsx, .xls), CSV, TXT | Looks for columns: SERIAL, IMEI, Serial No, etc.")
 
             # Notes
             st.markdown("---")
