@@ -348,8 +348,8 @@ def process_selected_orders(df, selected_invoices):
     model_only_df.columns = ['MODEL', 'QTY']
     model_only_output = model_only_df.sort_values('MODEL', ascending=True)
 
-    grade_mix_df = filtered_df.groupby(['GRADE', 'MODEL', 'CAPACITY'], as_index=False)['QTY'].sum()
-    grade_mix_output = grade_mix_df[['GRADE', 'MODEL', 'CAPACITY', 'QTY']].sort_values(['GRADE', 'MODEL', 'CAPACITY'], ascending=True)
+    grade_mix_df = filtered_df.groupby(['MODEL', 'CAPACITY', 'GRADE'], as_index=False)['QTY'].sum()
+    grade_mix_output = grade_mix_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']].sort_values(['MODEL', 'CAPACITY', 'GRADE'], ascending=True)
 
     return model_gb_output, model_only_output, grade_mix_output
 
@@ -730,18 +730,32 @@ def main():
                 # Compact Order Details Card with proper column widths
                 st.markdown("### 📋 Expected Order Details")
 
+                # Define columns to display in order
+                display_columns = ['INVOICE', 'MODEL', 'CAPACITY', 'COLOR', 'LOCKED', 'GRADE', 'UNIT', 'TOTAL', 'QTY', 'STATUS', 'SUPPLIER', 'FALLOUT RATE']
+
+                # Filter to only columns that exist in the dataframe
+                available_columns = [col for col in display_columns if col in order_df.columns]
+
                 # Configure column widths with specific pixel values for tighter spacing
                 column_config = {
-                    "MODEL": st.column_config.TextColumn("MODEL", width=200),
+                    "INVOICE": st.column_config.TextColumn("INVOICE", width=100),
+                    "MODEL": st.column_config.TextColumn("MODEL", width=150),
                     "CAPACITY": st.column_config.TextColumn("CAPACITY", width=80),
-                    "GRADE": st.column_config.TextColumn("GRADE", width=80),
-                    "QTY": st.column_config.NumberColumn("QTY", width=60)
+                    "COLOR": st.column_config.TextColumn("COLOR", width=80),
+                    "LOCKED": st.column_config.TextColumn("LOCKED", width=70),
+                    "GRADE": st.column_config.TextColumn("GRADE", width=70),
+                    "UNIT": st.column_config.TextColumn("UNIT", width=60),
+                    "TOTAL": st.column_config.NumberColumn("TOTAL", width=70),
+                    "QTY": st.column_config.NumberColumn("QTY", width=60),
+                    "STATUS": st.column_config.TextColumn("STATUS", width=80),
+                    "SUPPLIER": st.column_config.TextColumn("SUPPLIER", width=100),
+                    "FALLOUT RATE": st.column_config.TextColumn("FALLOUT RATE", width=90)
                 }
 
                 st.dataframe(
-                    order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
+                    order_df[available_columns] if available_columns else order_df,
                     hide_index=True,
-                    use_container_width=False,
+                    use_container_width=True,
                     height=250,
                     column_config=column_config
                 )
@@ -814,9 +828,9 @@ def main():
                 st.markdown("#### 🏷️ Grade Breakdown")
                 if grade_mix_output is not None:
                     config_grade = {
-                        "GRADE": st.column_config.TextColumn("GRADE", width=60),
                         "MODEL": st.column_config.TextColumn("MODEL", width=100),
                         "CAPACITY": st.column_config.TextColumn("CAPACITY", width=70),
+                        "GRADE": st.column_config.TextColumn("GRADE", width=60),
                         "QTY": st.column_config.NumberColumn("QTY", width=50)
                     }
                     st.dataframe(
@@ -1040,17 +1054,31 @@ def main():
                         order_data = json.loads(archived.order_data)
                         order_df = pd.DataFrame(order_data)
 
+                        # Define columns to display in order
+                        display_columns = ['INVOICE', 'MODEL', 'CAPACITY', 'COLOR', 'LOCKED', 'GRADE', 'UNIT', 'TOTAL', 'QTY', 'STATUS', 'SUPPLIER', 'FALLOUT RATE']
+
+                        # Filter to only columns that exist in the dataframe
+                        available_columns = [col for col in display_columns if col in order_df.columns]
+
                         column_config = {
-                            "MODEL": st.column_config.TextColumn("MODEL", width=200),
+                            "INVOICE": st.column_config.TextColumn("INVOICE", width=100),
+                            "MODEL": st.column_config.TextColumn("MODEL", width=150),
                             "CAPACITY": st.column_config.TextColumn("CAPACITY", width=80),
-                            "GRADE": st.column_config.TextColumn("GRADE", width=80),
-                            "QTY": st.column_config.NumberColumn("QTY", width=60)
+                            "COLOR": st.column_config.TextColumn("COLOR", width=80),
+                            "LOCKED": st.column_config.TextColumn("LOCKED", width=70),
+                            "GRADE": st.column_config.TextColumn("GRADE", width=70),
+                            "UNIT": st.column_config.TextColumn("UNIT", width=60),
+                            "TOTAL": st.column_config.NumberColumn("TOTAL", width=70),
+                            "QTY": st.column_config.NumberColumn("QTY", width=60),
+                            "STATUS": st.column_config.TextColumn("STATUS", width=80),
+                            "SUPPLIER": st.column_config.TextColumn("SUPPLIER", width=100),
+                            "FALLOUT RATE": st.column_config.TextColumn("FALLOUT RATE", width=90)
                         }
 
                         st.dataframe(
-                            order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
+                            order_df[available_columns] if available_columns else order_df,
                             hide_index=True,
-                            use_container_width=False,
+                            use_container_width=True,
                             height=250,
                             column_config=column_config
                         )
