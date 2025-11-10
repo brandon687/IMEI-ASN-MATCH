@@ -455,12 +455,16 @@ def archive_order(invoice, order_data, total_qty, unique_models, notes=None):
         # Get reconciliation data
         recon = session.query(OrderReconciliation).filter_by(invoice=invoice).first()
 
+        # Convert numpy types to Python native types
+        total_qty_int = int(total_qty) if total_qty is not None else None
+        unique_models_int = int(unique_models) if unique_models is not None else None
+
         # Create archived order
         archived = ArchivedOrder(
             invoice=invoice,
             order_data=json.dumps(order_data) if order_data else None,
-            total_qty=total_qty,
-            unique_models=unique_models,
+            total_qty=total_qty_int,
+            unique_models=unique_models_int,
             asn_filename=recon.asn_filename if recon else None,
             asn_file_data=recon.asn_file_data if recon else None,
             imei_serial_filename=recon.imei_serial_filename if recon else None,
@@ -469,6 +473,7 @@ def archive_order(invoice, order_data, total_qty, unique_models, notes=None):
             archived_date=datetime.utcnow()
         )
         session.add(archived)
+        session.flush()  # Flush before delete to avoid autoflush issues
 
         # Delete from reconciliation table
         if recon:

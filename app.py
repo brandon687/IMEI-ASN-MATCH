@@ -363,26 +363,28 @@ def create_copy_button(df, button_id):
         background-color: #2E86AB;
         color: white;
         border: none;
-        padding: 0.6rem 1.5rem;
+        padding: 0.5rem 1rem;
         border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
         font-weight: 600;
         transition: all 0.2s;
+        width: 100%;
+        height: 38px;
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'">
-    📋 Copy to Clipboard
+    Copy
     </button>
-    <span id="{button_id}_status" style="margin-left: 10px; color: #06D6A0; font-weight: 600;"></span>
+    <span id="{button_id}_status" style="margin-left: 10px; color: #06D6A0; font-weight: 600; font-size: 12px;"></span>
     <script>
         document.getElementById('{button_id}').addEventListener('click', function() {{
             const data = `{escaped_data}`;
             navigator.clipboard.writeText(data).then(function() {{
-                document.getElementById('{button_id}_status').textContent = '✅ Copied!';
+                document.getElementById('{button_id}_status').textContent = '✓';
                 setTimeout(function() {{
                     document.getElementById('{button_id}_status').textContent = '';
                 }}, 2000);
             }}).catch(function(err) {{
-                document.getElementById('{button_id}_status').textContent = '❌ Failed';
+                document.getElementById('{button_id}_status').textContent = '✗';
                 console.error('Could not copy text: ', err);
             }});
         }});
@@ -787,11 +789,11 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=45)
+                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=40)
                     with btn_col2:
                         csv_data = model_gb_output.to_csv(index=False)
                         st.download_button(
-                            "📥 Download",
+                            "Download",
                             data=csv_data,
                             file_name=f"{selected_invoice}_model_gb.csv",
                             mime="text/csv",
@@ -816,11 +818,11 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=45)
+                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=40)
                     with btn_col2:
                         csv_data = model_only_output.to_csv(index=False)
                         st.download_button(
-                            "📥 Download",
+                            "Download",
                             data=csv_data,
                             file_name=f"{selected_invoice}_model.csv",
                             mime="text/csv",
@@ -847,11 +849,11 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=45)
+                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=40)
                     with btn_col2:
                         csv_data = grade_mix_output.to_csv(index=False)
                         st.download_button(
-                            "📥 Download",
+                            "Download",
                             data=csv_data,
                             file_name=f"{selected_invoice}_grade_breakdown.csv",
                             mime="text/csv",
