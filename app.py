@@ -494,7 +494,7 @@ def main():
                         status_class = "status-pending"
                         status_text = "📋 Pending"
 
-                    col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1.5, 1.5])
+                    col1, col2, col3, col4, col5 = st.columns([2.5, 1.5, 1.8, 0.9, 1.1])
 
                     with col1:
                         st.markdown(f"**{invoice}**")
@@ -503,11 +503,11 @@ def main():
                     with col3:
                         st.markdown(f'<span class="status-badge {status_class}">{status_text}</span>', unsafe_allow_html=True)
                     with col4:
-                        if st.button("📤 Upload", key=f"upload_{invoice}", use_container_width=True):
+                        if st.button("📤", key=f"upload_{invoice}", use_container_width=True, help="Upload files"):
                             st.session_state['upload_order'] = invoice
                             st.rerun()
                     with col5:
-                        if st.button("View Details", key=f"view_{invoice}", use_container_width=True):
+                        if st.button("View", key=f"view_{invoice}", use_container_width=True):
                             st.session_state['selected_order_detail'] = invoice
                             st.rerun()
 
@@ -784,18 +784,20 @@ def main():
                         height=300,
                         column_config=config_model_gb
                     )
-                    # Copy button
-                    components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=50)
-                    # Download button
-                    csv_data = model_gb_output.to_csv(index=False)
-                    st.download_button(
-                        "📥 Download",
-                        data=csv_data,
-                        file_name=f"{selected_invoice}_model_gb.csv",
-                        mime="text/csv",
-                        key=f"dl_model_gb_{selected_invoice}",
-                        use_container_width=True
-                    )
+                    # Compact buttons in two columns
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=45)
+                    with btn_col2:
+                        csv_data = model_gb_output.to_csv(index=False)
+                        st.download_button(
+                            "📥 Download",
+                            data=csv_data,
+                            file_name=f"{selected_invoice}_model_gb.csv",
+                            mime="text/csv",
+                            key=f"dl_model_gb_{selected_invoice}",
+                            use_container_width=True
+                        )
 
             with col2:
                 st.markdown("#### 📱 MODEL + QTY")
@@ -811,18 +813,20 @@ def main():
                         height=300,
                         column_config=config_model
                     )
-                    # Copy button
-                    components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=50)
-                    # Download button
-                    csv_data = model_only_output.to_csv(index=False)
-                    st.download_button(
-                        "📥 Download",
-                        data=csv_data,
-                        file_name=f"{selected_invoice}_model.csv",
-                        mime="text/csv",
-                        key=f"dl_model_{selected_invoice}",
-                        use_container_width=True
-                    )
+                    # Compact buttons in two columns
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=45)
+                    with btn_col2:
+                        csv_data = model_only_output.to_csv(index=False)
+                        st.download_button(
+                            "📥 Download",
+                            data=csv_data,
+                            file_name=f"{selected_invoice}_model.csv",
+                            mime="text/csv",
+                            key=f"dl_model_{selected_invoice}",
+                            use_container_width=True
+                        )
 
             with col3:
                 st.markdown("#### 🏷️ Grade Breakdown")
@@ -840,18 +844,20 @@ def main():
                         height=300,
                         column_config=config_grade
                     )
-                    # Copy button
-                    components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=50)
-                    # Download button
-                    csv_data = grade_mix_output.to_csv(index=False)
-                    st.download_button(
-                        "📥 Download",
-                        data=csv_data,
-                        file_name=f"{selected_invoice}_grade_breakdown.csv",
-                        mime="text/csv",
-                        key=f"dl_grade_{selected_invoice}",
-                        use_container_width=True
-                    )
+                    # Compact buttons in two columns
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=45)
+                    with btn_col2:
+                        csv_data = grade_mix_output.to_csv(index=False)
+                        st.download_button(
+                            "📥 Download",
+                            data=csv_data,
+                            file_name=f"{selected_invoice}_grade_breakdown.csv",
+                            mime="text/csv",
+                            key=f"dl_grade_{selected_invoice}",
+                            use_container_width=True
+                        )
 
             st.markdown("---")
 
