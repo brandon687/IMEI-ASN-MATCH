@@ -399,7 +399,7 @@ def main():
     init_database()
 
     # Navigation tabs
-    tab1, tab2, tab3 = st.tabs(["🏠 Dashboard", "📋 Orders", "🔍 Order Details"])
+    tab1, tab2 = st.tabs(["🏠 Dashboard", "🔍 Order Details"])
 
     # TAB 1: Dashboard
     with tab1:
@@ -587,119 +587,8 @@ def main():
             else:
                 st.warning("No data available")
 
-    # TAB 2: Orders Processing
+    # TAB 2: Order Details - Grid Card View
     with tab2:
-        st.markdown("## 📋 Order Processing")
-
-        df, error = load_data_from_sheets()
-
-        if error:
-            st.error(f"❌ {error}")
-            return
-
-        if df is None or df.empty:
-            st.warning("No orders found")
-            return
-
-        invoices = sorted(df['INVOICE'].unique().tolist())
-
-        # Selection mode
-        col1, col2 = st.columns([1, 3])
-
-        with col1:
-            selection_mode = st.radio(
-                "Selection Mode:",
-                ["Single Order", "Multiple Orders"]
-            )
-
-        with col2:
-            if selection_mode == "Single Order":
-                selected_invoices = [st.selectbox("Select Invoice:", invoices)]
-            else:
-                selected_invoices = st.multiselect("Select Invoices:", invoices)
-
-        if not selected_invoices:
-            st.info("👆 Please select at least one invoice")
-            return
-
-        st.markdown("---")
-
-        # Process orders
-        model_gb_output, model_only_output, grade_mix_output = process_selected_orders(df, selected_invoices)
-
-        if model_gb_output is None:
-            st.error("No data found")
-            return
-
-        total_qty = model_gb_output['QTY'].sum()
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Selected Orders", len(selected_invoices))
-        with col2:
-            st.metric("Total Units", f"{total_qty:,}")
-        with col3:
-            st.metric("Unique Models", len(model_only_output))
-
-        st.markdown("---")
-
-        # MODEL + GB
-        st.markdown("### 📊 MODEL + GB Breakdown")
-        st.dataframe(model_gb_output, hide_index=True, use_container_width=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            csv1 = model_gb_output.to_csv(index=False)
-            st.download_button(
-                label="📥 Download CSV",
-                data=csv1,
-                file_name=f"model_gb_{'_'.join(selected_invoices[:3])}.csv",
-                mime="text/csv",
-                key="download_model_gb"
-            )
-        with col2:
-            components.html(create_copy_button(model_gb_output, "copy_btn_1"), height=50)
-
-        st.markdown("---")
-
-        # MODEL Only
-        st.markdown("### 📱 MODEL Breakdown")
-        st.dataframe(model_only_output, hide_index=True, use_container_width=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            csv2 = model_only_output.to_csv(index=False)
-            st.download_button(
-                label="📥 Download CSV",
-                data=csv2,
-                file_name=f"model_only_{'_'.join(selected_invoices[:3])}.csv",
-                mime="text/csv",
-                key="download_model_only"
-            )
-        with col2:
-            components.html(create_copy_button(model_only_output, "copy_btn_2"), height=50)
-
-        st.markdown("---")
-
-        # Grade Mix
-        st.markdown("### 🏷️ GRADE MIX")
-        st.dataframe(grade_mix_output, hide_index=True, use_container_width=True)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            csv3 = grade_mix_output.to_csv(index=False)
-            st.download_button(
-                label="📥 Download CSV",
-                data=csv3,
-                file_name=f"grade_mix_{'_'.join(selected_invoices[:3])}.csv",
-                mime="text/csv",
-                key="download_grade_mix"
-            )
-        with col2:
-            components.html(create_copy_button(grade_mix_output, "copy_btn_3"), height=50)
-
-    # TAB 3: Order Details - Grid Card View
-    with tab3:
         st.markdown("## 🔍 Order Details")
 
         df, error = load_data_from_sheets()
@@ -835,6 +724,93 @@ def main():
                     height=250,
                     column_config=column_config
                 )
+
+            st.markdown("---")
+
+            # Process breakdowns for this order
+            model_gb_output, model_only_output, grade_mix_output = process_selected_orders(df, [selected_invoice])
+
+            # Three breakdown tables in compact card layout
+            st.markdown("### 📊 Breakdowns")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.markdown("#### 📊 MODEL + GB")
+                if model_gb_output is not None:
+                    config_model_gb = {
+                        "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=150),
+                        "QTY": st.column_config.NumberColumn("QTY", width=60)
+                    }
+                    st.dataframe(
+                        model_gb_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=300,
+                        column_config=config_model_gb
+                    )
+                    # Download button
+                    csv_data = model_gb_output.to_csv(index=False)
+                    st.download_button(
+                        "📥 Download",
+                        data=csv_data,
+                        file_name=f"{selected_invoice}_model_gb.csv",
+                        mime="text/csv",
+                        key=f"dl_model_gb_{selected_invoice}",
+                        use_container_width=True
+                    )
+
+            with col2:
+                st.markdown("#### 📱 MODEL")
+                if model_only_output is not None:
+                    config_model = {
+                        "MODEL": st.column_config.TextColumn("MODEL", width=120),
+                        "QTY": st.column_config.NumberColumn("QTY", width=60)
+                    }
+                    st.dataframe(
+                        model_only_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=300,
+                        column_config=config_model
+                    )
+                    # Download button
+                    csv_data = model_only_output.to_csv(index=False)
+                    st.download_button(
+                        "📥 Download",
+                        data=csv_data,
+                        file_name=f"{selected_invoice}_model.csv",
+                        mime="text/csv",
+                        key=f"dl_model_{selected_invoice}",
+                        use_container_width=True
+                    )
+
+            with col3:
+                st.markdown("#### 🏷️ GRADE MIX")
+                if grade_mix_output is not None:
+                    config_grade = {
+                        "GRADE": st.column_config.TextColumn("GRADE", width=60),
+                        "MODEL": st.column_config.TextColumn("MODEL", width=100),
+                        "CAPACITY": st.column_config.TextColumn("CAPACITY", width=70),
+                        "QTY": st.column_config.NumberColumn("QTY", width=50)
+                    }
+                    st.dataframe(
+                        grade_mix_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=300,
+                        column_config=config_grade
+                    )
+                    # Download button
+                    csv_data = grade_mix_output.to_csv(index=False)
+                    st.download_button(
+                        "📥 Download",
+                        data=csv_data,
+                        file_name=f"{selected_invoice}_grade_mix.csv",
+                        mime="text/csv",
+                        key=f"dl_grade_{selected_invoice}",
+                        use_container_width=True
+                    )
 
             st.markdown("---")
 
