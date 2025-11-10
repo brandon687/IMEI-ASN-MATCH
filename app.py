@@ -201,6 +201,21 @@ st.markdown("""
         overflow: hidden;
     }
 
+    /* Compact table styling - reduce cell padding and spacing */
+    .stDataFrame table {
+        font-size: 0.85rem;
+    }
+
+    .stDataFrame th, .stDataFrame td {
+        padding: 0.3rem 0.5rem !important;
+        white-space: nowrap;
+    }
+
+    .stDataFrame thead th {
+        padding: 0.4rem 0.5rem !important;
+        font-weight: 600;
+    }
+
     /* File uploader */
     .stFileUploader {
         background: white;
@@ -805,18 +820,18 @@ def main():
                 # Compact Order Details Card with proper column widths
                 st.markdown("### 📋 Expected Order Details")
 
-                # Configure column widths to reduce white space
+                # Configure column widths with specific pixel values for tighter spacing
                 column_config = {
-                    "MODEL": st.column_config.TextColumn("MODEL", width="medium"),
-                    "CAPACITY": st.column_config.TextColumn("CAPACITY", width="small"),
-                    "GRADE": st.column_config.TextColumn("GRADE", width="small"),
-                    "QTY": st.column_config.NumberColumn("QTY", width="small")
+                    "MODEL": st.column_config.TextColumn("MODEL", width=200),
+                    "CAPACITY": st.column_config.TextColumn("CAPACITY", width=80),
+                    "GRADE": st.column_config.TextColumn("GRADE", width=80),
+                    "QTY": st.column_config.NumberColumn("QTY", width=60)
                 }
 
                 st.dataframe(
                     order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
                     hide_index=True,
-                    use_container_width=True,
+                    use_container_width=False,
                     height=250,
                     column_config=column_config
                 )
