@@ -1,6 +1,6 @@
-# WRMA Inbound Processor
+# IMEI/ASN Match
 
-A modern, production-ready order processing system with ASN and IMEI/SERIAL tracking. Built with Streamlit and designed for Railway deployment.
+A modern, production-ready system for matching IMEI/Serial numbers to ASN orders with intelligent tracking. Built with Streamlit and designed for Railway deployment.
 
 ## Features
 
@@ -158,7 +158,7 @@ WORKSHEET_GID = "YOUR_WORKSHEET_GID_HERE"
 1. **Clone the repository:**
    ```bash
    git clone YOUR_REPO_URL
-   cd wrma-inbound-processor
+   cd imei-asn-match
    ```
 
 2. **Create virtual environment:**
@@ -222,7 +222,7 @@ WORKSHEET_GID = "YOUR_WORKSHEET_GID_HERE"
 ## Project Structure
 
 ```
-wrma-inbound-processor/
+imei-asn-match/
 ├── app.py                      # Main Streamlit application
 ├── database.py                 # Database models and operations
 ├── google_sheets_auth.py       # Google Sheets authentication

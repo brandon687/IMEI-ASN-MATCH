@@ -1,6 +1,6 @@
 # Railway Deployment Quick Start
 
-Get your WRMA Inbound Processor running on Railway in 10 minutes.
+Get your IMEI/ASN Match running on Railway in 10 minutes.
 
 ## Prerequisites Checklist
 
@@ -22,7 +22,7 @@ Get your WRMA Inbound Processor running on Railway in 10 minutes.
    - Google Drive API
 4. Create Service Account:
    - IAM & Admin → Service Accounts → Create
-   - Name it "wrma-inbound-processor"
+   - Name it "imei-asn-match"
    - Create and download JSON key
 5. Copy the service account email (looks like: `name@project.iam.gserviceaccount.com`)
 
@@ -44,7 +44,7 @@ Get your WRMA Inbound Processor running on Railway in 10 minutes.
    git init
    git add .
    git commit -m "Initial deployment"
-   gh repo create wrma-inbound-processor --private --source=. --push
+   gh repo create imei-asn-match --private --source=. --push
    # OR manually create repo and push:
    # git remote add origin YOUR_GITHUB_URL
    # git push -u origin main
@@ -53,7 +53,7 @@ Get your WRMA Inbound Processor running on Railway in 10 minutes.
 2. **Deploy on Railway:**
    - Visit [railway.app/new](https://railway.app/new)
    - Select "Deploy from GitHub repo"
-   - Choose `wrma-inbound-processor`
+   - Choose `imei-asn-match`
    - Click "Add variables" and skip for now
    - Click "Deploy"
 

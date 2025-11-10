@@ -15,8 +15,8 @@ from datetime import datetime
 
 # Page configuration
 st.set_page_config(
-    page_title="WRMA Inbound Processor",
-    page_icon="📦",
+    page_title="IMEI/ASN Match",
+    page_icon="🔢",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -373,8 +373,8 @@ def main():
     # Header
     st.markdown("""
     <div class="main-header">
-        <h1>📦 WRMA Inbound Processor</h1>
-        <p>Modern order processing with ASN and IMEI/SERIAL tracking</p>
+        <h1>🔢 IMEI/ASN Match</h1>
+        <p>Match IMEI/Serial numbers to ASN orders with intelligent tracking</p>
     </div>
     """, unsafe_allow_html=True)
 
