@@ -54,13 +54,33 @@ class SupplierProfile(Base):
 
 class ColumnMapping(Base):
     __tablename__ = 'column_mappings'
-    
+
     id = Column(Integer, primary_key=True)
     supplier_id = Column(Integer, ForeignKey('supplier_profiles.id'), nullable=False, index=True)
     source_column = Column(String, nullable=False)
     target_field = Column(String, nullable=False)
     transformation = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class ArchivedOrder(Base):
+    __tablename__ = 'archived_orders'
+
+    id = Column(Integer, primary_key=True)
+    invoice = Column(String, nullable=False, index=True)
+    # Order details from Google Sheets
+    order_data = Column(Text, nullable=True)  # JSON string of order line items
+    total_qty = Column(Integer, nullable=True)
+    unique_models = Column(Integer, nullable=True)
+    # Files
+    asn_filename = Column(String, nullable=True)
+    asn_file_data = Column(LargeBinary, nullable=True)
+    imei_serial_filename = Column(String, nullable=True)
+    imei_serial_file_data = Column(LargeBinary, nullable=True)
+    # Metadata
+    notes = Column(Text, nullable=True)
+    archived_date = Column(DateTime, default=datetime.utcnow)
+    archived_by = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 @st.cache_resource
@@ -422,5 +442,77 @@ def get_order_statistics():
             'with_imei': sum(1 for o in all_orders if o.imei_serial_uploaded),
             'pending': sum(1 for o in all_orders if not o.asn_uploaded)
         }
+    finally:
+        session.close()
+
+def archive_order(invoice, order_data, total_qty, unique_models, notes=None):
+    """Archive an order with all its data"""
+    import json
+    session = get_session()
+    if session is None:
+        return None
+    try:
+        # Get reconciliation data
+        recon = session.query(OrderReconciliation).filter_by(invoice=invoice).first()
+
+        # Create archived order
+        archived = ArchivedOrder(
+            invoice=invoice,
+            order_data=json.dumps(order_data) if order_data else None,
+            total_qty=total_qty,
+            unique_models=unique_models,
+            asn_filename=recon.asn_filename if recon else None,
+            asn_file_data=recon.asn_file_data if recon else None,
+            imei_serial_filename=recon.imei_serial_filename if recon else None,
+            imei_serial_file_data=recon.imei_serial_file_data if recon else None,
+            notes=notes or (recon.notes if recon else None),
+            archived_date=datetime.utcnow()
+        )
+        session.add(archived)
+
+        # Delete from reconciliation table
+        if recon:
+            session.delete(recon)
+
+        # Delete line items
+        session.query(OrderLineItem).filter_by(invoice=invoice).delete()
+
+        session.commit()
+        return archived
+    finally:
+        session.close()
+
+def get_all_archived_orders():
+    """Get all archived orders"""
+    session = get_session()
+    if session is None:
+        return []
+    try:
+        return session.query(ArchivedOrder).order_by(ArchivedOrder.archived_date.desc()).all()
+    finally:
+        session.close()
+
+def get_archived_order(invoice):
+    """Get a specific archived order"""
+    session = get_session()
+    if session is None:
+        return None
+    try:
+        return session.query(ArchivedOrder).filter_by(invoice=invoice).first()
+    finally:
+        session.close()
+
+def delete_archived_order(invoice):
+    """Delete an archived order"""
+    session = get_session()
+    if session is None:
+        return False
+    try:
+        archived = session.query(ArchivedOrder).filter_by(invoice=invoice).first()
+        if archived:
+            session.delete(archived)
+            session.commit()
+            return True
+        return False
     finally:
         session.close()

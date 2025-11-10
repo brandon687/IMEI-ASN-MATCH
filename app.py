@@ -10,7 +10,11 @@ from database import (
     clear_all_asn_data,
     clear_imei_serial_data,
     get_order_statistics,
-    get_database_engine
+    get_database_engine,
+    archive_order,
+    get_all_archived_orders,
+    get_archived_order,
+    delete_archived_order
 )
 from datetime import datetime
 from imei_extractor import extract_imeis_from_file, format_imeis_for_display
@@ -399,7 +403,7 @@ def main():
     init_database()
 
     # Navigation tabs
-    tab1, tab2 = st.tabs(["🏠 Dashboard", "🔍 Order Details"])
+    tab1, tab2, tab3 = st.tabs(["🏠 Dashboard", "🔍 Order Details", "📦 Archived"])
 
     # TAB 1: Dashboard
     with tab1:
@@ -642,7 +646,7 @@ def main():
             has_imei = recon and recon.imei_serial_uploaded
 
             # Header
-            col1, col2 = st.columns([3, 1])
+            col1, col2, col3 = st.columns([2, 1, 1])
             with col1:
                 st.markdown(f"### 📦 {selected_invoice}")
             with col2:
@@ -650,6 +654,23 @@ def main():
                     st.success("✅ ASN Uploaded")
                 else:
                     st.warning("⚠️ No ASN")
+            with col3:
+                if st.button("📦 Archive Order", key=f"archive_{selected_invoice}", use_container_width=True):
+                    # Prepare order data for archiving
+                    order_data_list = order_df.to_dict('records')
+                    result = archive_order(
+                        invoice=selected_invoice,
+                        order_data=order_data_list,
+                        total_qty=order_qty,
+                        unique_models=unique_models,
+                        notes=recon.notes if recon else None
+                    )
+                    if result:
+                        st.success("✅ Order archived!")
+                        st.session_state['selected_order_card'] = None
+                        st.rerun()
+                    else:
+                        st.error("❌ Failed to archive")
 
             st.markdown("---")
 
@@ -948,5 +969,190 @@ def main():
                         if st.button("View Details", key=f"card_{invoice}", use_container_width=True):
                             st.session_state['selected_order_card'] = invoice
                             st.rerun()
+
+    # TAB 3: Archived Orders
+    with tab3:
+        st.markdown("## 📦 Archived Orders")
+        st.info("📋 Archived orders are preserved here even after they are removed from the Google Sheet source.")
+
+        archived_orders = get_all_archived_orders()
+
+        if not archived_orders:
+            st.warning("No archived orders yet")
+        else:
+            # Initialize selected archived order
+            if 'selected_archived_order' not in st.session_state:
+                st.session_state['selected_archived_order'] = None
+
+            # Detail view for selected archived order
+            if st.session_state['selected_archived_order']:
+                selected_archived = st.session_state['selected_archived_order']
+                archived = get_archived_order(selected_archived)
+
+                if not archived:
+                    st.error("Archived order not found")
+                    st.session_state['selected_archived_order'] = None
+                    st.rerun()
+
+                if st.button("← Back to Archived Orders", key="back_to_archived"):
+                    st.session_state['selected_archived_order'] = None
+                    st.rerun()
+
+                st.markdown("---")
+
+                # Header
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.markdown(f"### 📦 {archived.invoice}")
+                    st.caption(f"Archived on: {archived.archived_date.strftime('%Y-%m-%d %H:%M')}")
+                with col2:
+                    if st.button("🗑️ Delete Archive", key=f"delete_archived_{archived.invoice}", type="secondary", use_container_width=True):
+                        if delete_archived_order(archived.invoice):
+                            st.success("✅ Archive deleted!")
+                            st.session_state['selected_archived_order'] = None
+                            st.rerun()
+                        else:
+                            st.error("❌ Failed to delete")
+
+                st.markdown("---")
+
+                # Summary and Order Details
+                col1, col2 = st.columns([1.5, 3.5])
+
+                with col1:
+                    st.markdown("### 📊 Summary")
+                    st.markdown(f"""
+                    <div style="background: white; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2E86AB; min-height: 70px;">
+                        <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
+                        <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{archived.total_qty:,}</p>
+                    </div>
+
+                    <div style="background: white; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #A23B72; min-height: 70px;">
+                        <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Models</p>
+                        <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{archived.unique_models}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                with col2:
+                    st.markdown("### 📋 Order Details")
+                    if archived.order_data:
+                        import json
+                        order_data = json.loads(archived.order_data)
+                        order_df = pd.DataFrame(order_data)
+
+                        column_config = {
+                            "MODEL": st.column_config.TextColumn("MODEL", width=200),
+                            "CAPACITY": st.column_config.TextColumn("CAPACITY", width=80),
+                            "GRADE": st.column_config.TextColumn("GRADE", width=80),
+                            "QTY": st.column_config.NumberColumn("QTY", width=60)
+                        }
+
+                        st.dataframe(
+                            order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
+                            hide_index=True,
+                            use_container_width=False,
+                            height=250,
+                            column_config=column_config
+                        )
+                    else:
+                        st.warning("No order details available")
+
+                st.markdown("---")
+
+                # Files
+                col1, col2 = st.columns(2)
+
+                with col1:
+                    st.markdown("#### 📤 ASN File")
+                    if archived.asn_filename and archived.asn_file_data:
+                        st.success(f"✅ {archived.asn_filename}")
+                        st.download_button(
+                            "⬇️ Download ASN",
+                            data=archived.asn_file_data,
+                            file_name=archived.asn_filename,
+                            key=f"dl_archived_asn_{archived.invoice}",
+                            use_container_width=True
+                        )
+
+                        # Extract and show IMEIs from archived ASN
+                        imeis, count, error = extract_imeis_from_file(archived.asn_file_data, archived.asn_filename)
+                        if imeis:
+                            st.success(f"✅ Found {count} IMEIs")
+                    else:
+                        st.info("No ASN file archived")
+
+                with col2:
+                    st.markdown("#### 🔢 Extracted IMEIs")
+                    if archived.asn_file_data:
+                        imeis, count, error = extract_imeis_from_file(archived.asn_file_data, archived.asn_filename)
+
+                        if error:
+                            st.error(f"⚠️ {error}")
+                        elif imeis:
+                            imei_text = format_imeis_for_display(imeis)
+                            st.text_area(
+                                "Copy IMEIs:",
+                                value=imei_text,
+                                height=300,
+                                key=f"archived_imei_display_{archived.invoice}"
+                            )
+                            st.download_button(
+                                "⬇️ Download IMEIs",
+                                data=imei_text,
+                                file_name=f"{archived.invoice}_IMEIs.txt",
+                                mime="text/plain",
+                                key=f"dl_archived_imeis_{archived.invoice}",
+                                use_container_width=True
+                            )
+                        else:
+                            st.info("No IMEIs found")
+                    else:
+                        st.info("No ASN file to extract from")
+
+                # Notes
+                if archived.notes:
+                    st.markdown("---")
+                    st.markdown("#### 📝 Notes")
+                    st.text_area("", value=archived.notes, height=100, key=f"archived_notes_{archived.invoice}", disabled=True)
+
+            else:
+                # Grid view - show all archived orders
+                st.markdown(f"### 📦 All Archived Orders ({len(archived_orders)})")
+                st.markdown("---")
+
+                # Create 3-column grid
+                cards_per_row = 3
+                for i in range(0, len(archived_orders), cards_per_row):
+                    cols = st.columns(cards_per_row)
+                    for j, col in enumerate(cols):
+                        idx = i + j
+                        if idx >= len(archived_orders):
+                            break
+
+                        archived = archived_orders[idx]
+
+                        with col:
+                            # Compact card
+                            st.markdown(f"""
+                            <div style="background: white; padding: 1.2rem; border-radius: 10px; border: 2px solid #DEE2E6;
+                                 box-shadow: 0 2px 4px rgba(0,0,0,0.08); height: 180px; cursor: pointer;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                    <h4 style="margin: 0; color: #2E86AB; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{archived.invoice}</h4>
+                                    <span style="font-size: 1.5rem;">📦</span>
+                                </div>
+                                <div style="margin-bottom: 0.5rem;">
+                                    <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
+                                    <p style="font-size: 1.3rem; font-weight: 700; margin: 0;">{archived.total_qty:,}</p>
+                                </div>
+                                <div style="background: #E3F2FD; padding: 0.3rem 0.8rem; border-radius: 15px; text-align: center; font-size: 0.75rem; font-weight: 600;">
+                                    Archived {archived.archived_date.strftime('%Y-%m-%d')}
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+                            if st.button("View Details", key=f"archived_card_{archived.invoice}", use_container_width=True):
+                                st.session_state['selected_archived_order'] = archived.invoice
+                                st.rerun()
+
 if __name__ == "__main__":
     main()
