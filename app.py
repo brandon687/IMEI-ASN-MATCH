@@ -696,7 +696,7 @@ def main():
         with col2:
             components.html(create_copy_button(grade_mix_output, "copy_btn_3"), height=50)
 
-    # TAB 3: Order Details - Expandable Card View
+    # TAB 3: Order Details - Grid Card View
     with tab3:
         st.markdown("## 🔍 Order Details")
 
@@ -710,225 +710,201 @@ def main():
         reconciliations = get_all_reconciliations()
         recon_dict = {r.invoice: r for r in reconciliations}
 
-        # Debug: Show database connection status
+        # Check database connection
+        engine = get_database_engine()
+        if engine is None:
+            st.error("⚠️ **DATABASE NOT CONNECTED!**")
+            st.warning("Files cannot be saved without database. Check DATABASE_URL in Railway settings.")
+            st.info("Go to Railway → Your Project → PostgreSQL → Connect → Copy DATABASE_URL → Add to your web service variables")
+
+        # Debug toggle
         if st.checkbox("🐛 Show Debug Info", key="debug_toggle"):
-            st.info(f"📊 Total reconciliation records in database: {len(reconciliations)}")
+            import os
+            db_url = os.environ.get('DATABASE_URL', 'NOT SET')
+            st.write(f"**Database URL:** {db_url[:50]}... (truncated)" if db_url != 'NOT SET' else "**Database URL:** NOT SET")
+            st.write(f"**Database Engine:** {'✅ Connected' if engine else '❌ Not Connected'}")
+            st.write(f"**Total Records:** {len(reconciliations)}")
             if reconciliations:
-                st.write("Sample records:")
+                st.write("**Sample Records:**")
                 for r in reconciliations[:3]:
-                    st.write(f"- {r.invoice}: ASN={r.asn_uploaded}, IMEI={r.imei_serial_uploaded}, ASN File Size={len(r.asn_file_data) if r.asn_file_data else 0}")
+                    st.write(f"- {r.invoice}: ASN={r.asn_uploaded}, File Size={len(r.asn_file_data) if r.asn_file_data else 0} bytes")
 
-        st.markdown("### 📦 All Orders - Click to Expand")
-        st.markdown("---")
+        # Initialize selected order
+        if 'selected_order_card' not in st.session_state:
+            st.session_state['selected_order_card'] = None
 
-        # Initialize expanded state
-        if 'expanded_orders' not in st.session_state:
-            st.session_state['expanded_orders'] = set()
+        # Detail view for selected order
+        if st.session_state['selected_order_card']:
+            selected_invoice = st.session_state['selected_order_card']
 
-        # Create expandable cards
-        for invoice in all_invoices:
-            recon = recon_dict.get(invoice)
-            order_df = df[df['INVOICE'] == invoice]
+            if st.button("← Back to All Orders", key="back_to_grid"):
+                st.session_state['selected_order_card'] = None
+                st.rerun()
+
+            st.markdown("---")
+
+            recon = recon_dict.get(selected_invoice)
+            order_df = df[df['INVOICE'] == selected_invoice]
             order_qty = order_df['QTY'].sum()
             unique_models = order_df['MODEL'].nunique()
-
-            # Determine status
             has_asn = recon and recon.asn_uploaded
             has_imei = recon and recon.imei_serial_uploaded
 
-            if has_asn and has_imei:
-                status_text = "✅ Complete"
-                status_color = "#D1FAE5"
-            elif has_asn:
-                status_text = "⚠️ ASN Only"
-                status_color = "#FEF3C7"
-            else:
-                status_text = "📋 Pending"
-                status_color = "#DBEAFE"
-
-            # Check if this card is expanded
-            is_expanded = invoice in st.session_state['expanded_orders']
-
-            # Card header
-            card_html = f"""
-            <div class="order-card" style="background: white; padding: 1.5rem; border-radius: 12px;
-                 margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08); border: 2px solid #DEE2E6;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; color: #2E86AB; font-size: 1.3rem;">📦 {invoice}</h3>
-                    <span style="background: {status_color}; padding: 0.4rem 1rem;
-                          border-radius: 20px; font-size: 0.875rem; font-weight: 600;">{status_text}</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
-                    <div>
-                        <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">Total Units</p>
-                        <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
-                    </div>
-                    <div>
-                        <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">Unique Models</p>
-                        <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{unique_models}</p>
-                    </div>
-                    <div>
-                        <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">IMEI Count</p>
-                        <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">
-                            {f"{recon.imei_serial_count:,}" if has_imei and recon.imei_serial_count else "N/A"}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-
-            # Expand/Collapse button
-            col1, col2 = st.columns([6, 1])
+            # Header
+            col1, col2, col3 = st.columns([2, 1, 1])
+            with col1:
+                st.markdown(f"### 📦 {selected_invoice}")
             with col2:
-                button_label = "▼ Collapse" if is_expanded else "▶ Expand"
-                if st.button(button_label, key=f"toggle_{invoice}", use_container_width=True):
-                    if is_expanded:
-                        st.session_state['expanded_orders'].remove(invoice)
+                if has_asn:
+                    st.success("✅ ASN")
+                else:
+                    st.warning("⚠️ No ASN")
+            with col3:
+                if has_imei:
+                    st.success("✅ IMEI")
+                else:
+                    st.warning("⚠️ No IMEI")
+
+            st.markdown("---")
+
+            # Metrics
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("Total Units", f"{order_qty:,}")
+            with col2:
+                st.metric("Unique Models", unique_models)
+            with col3:
+                st.metric("IMEI Count", f"{recon.imei_serial_count:,}" if has_imei and recon.imei_serial_count else "N/A")
+
+            st.markdown("---")
+
+            # Order table
+            st.markdown("#### 📋 Expected Order Details")
+            st.dataframe(order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']], hide_index=True, use_container_width=True)
+
+            st.markdown("---")
+
+            # Files
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("#### 📤 ASN File")
+                if has_asn:
+                    st.success(f"✅ {recon.asn_filename}")
+                    if recon.asn_file_data:
+                        st.caption(f"{len(recon.asn_file_data)} bytes")
+                        st.download_button("⬇️ Download", recon.asn_file_data, recon.asn_filename, key=f"dl_asn_{selected_invoice}", use_container_width=True)
                     else:
-                        st.session_state['expanded_orders'].add(invoice)
-                    st.rerun()
-
-            # Expanded content
-            if is_expanded:
-                with st.container():
-                    st.markdown("---")
-
-                    # Order details table
-                    st.markdown("#### 📋 Expected Order Details")
-                    st.dataframe(
-                        order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
-                        hide_index=True,
-                        use_container_width=True
-                    )
-
-                    st.markdown("---")
-
-                    # File Upload Section
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-                        st.markdown("#### 📤 ASN File")
-
-                        if has_asn:
-                            st.success(f"✅ Uploaded: {recon.asn_filename}")
-
-                            # Debug info
-                            if recon.asn_file_data:
-                                st.caption(f"File size: {len(recon.asn_file_data)} bytes")
-
-                            if recon.asn_file_data:
-                                st.download_button(
-                                    label="⬇️ Download ASN",
-                                    data=recon.asn_file_data,
-                                    file_name=recon.asn_filename,
-                                    mime="application/octet-stream",
-                                    key=f"download_asn_{invoice}",
-                                    use_container_width=True
-                                )
-                            else:
-                                st.error("⚠️ File data is missing!")
-
-                            if st.button("🗑️ Clear ASN", key=f"clear_asn_{invoice}", use_container_width=True):
-                                if clear_asn_data(invoice):
-                                    st.success("Cleared!")
-                                    st.rerun()
-                        else:
-                            asn_file = st.file_uploader("Upload ASN File", key=f"asn_upload_{invoice}", type=['xlsx', 'xls', 'csv', 'txt', 'pdf'])
-                            if asn_file:
-                                st.info(f"File selected: {asn_file.name} ({asn_file.size} bytes)")
-                                if st.button("💾 Save ASN", type="primary", use_container_width=True, key=f"save_asn_{invoice}"):
-                                    try:
-                                        asn_file.seek(0)
-                                        asn_data = asn_file.read()
-                                        st.write(f"Debug: Read {len(asn_data)} bytes")
-
-                                        result = create_or_update_reconciliation(
-                                            invoice=invoice,
-                                            asn_uploaded=True,
-                                            asn_filename=asn_file.name,
-                                            asn_file_data=asn_data,
-                                            asn_upload_date=datetime.utcnow()
-                                        )
-
-                                        if result:
-                                            st.success(f"✅ ASN saved! Record ID: {result.id}")
-                                        else:
-                                            st.error("❌ Failed to save - no result returned")
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"❌ Error saving: {str(e)}")
-
-                    with col2:
-                        st.markdown("#### 🔢 IMEI/Serial File")
-
-                        if has_imei:
-                            st.success(f"✅ Uploaded: {recon.imei_serial_filename}")
-
-                            if recon.imei_serial_file_data:
-                                st.caption(f"File size: {len(recon.imei_serial_file_data)} bytes")
-                                st.download_button(
-                                    label="⬇️ Download IMEI/Serial",
-                                    data=recon.imei_serial_file_data,
-                                    file_name=recon.imei_serial_filename,
-                                    mime="application/octet-stream",
-                                    key=f"download_imei_{invoice}",
-                                    use_container_width=True
-                                )
-                            else:
-                                st.error("⚠️ File data is missing!")
-
-                            if st.button("🗑️ Clear IMEI/Serial", key=f"clear_imei_{invoice}", use_container_width=True):
-                                if clear_imei_serial_data(invoice):
-                                    st.success("Cleared!")
-                                    st.rerun()
-                        else:
-                            imei_file = st.file_uploader("Upload IMEI/SERIAL File", key=f"imei_upload_{invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
-                            if imei_file:
-                                # Try to count lines/rows
-                                imei_file.seek(0)
-                                try:
-                                    content = imei_file.read().decode('utf-8')
-                                    count = len([line for line in content.split('\n') if line.strip()])
-                                    st.info(f"📊 Detected {count} entries")
-                                    imei_file.seek(0)
-                                except:
-                                    count = None
-
-                                if st.button("💾 Save IMEI/Serial", type="primary", use_container_width=True, key=f"save_imei_{invoice}"):
-                                    try:
-                                        imei_file.seek(0)
-                                        imei_data = imei_file.read()
-
-                                        result = create_or_update_reconciliation(
-                                            invoice=invoice,
-                                            imei_serial_uploaded=True,
-                                            imei_serial_filename=imei_file.name,
-                                            imei_serial_file_data=imei_data,
-                                            imei_serial_upload_date=datetime.utcnow(),
-                                            imei_serial_count=count
-                                        )
-
-                                        if result:
-                                            st.success(f"✅ IMEI/Serial saved! Record ID: {result.id}")
-                                        else:
-                                            st.error("❌ Failed to save")
-                                        st.rerun()
-                                    except Exception as e:
-                                        st.error(f"❌ Error saving: {str(e)}")
-
-                    # Notes section
-                    st.markdown("---")
-                    st.markdown("#### 📝 Notes")
-                    current_notes = recon.notes if recon and recon.notes else ""
-                    notes = st.text_area("Order Notes:", value=current_notes, height=100, key=f"notes_{invoice}")
-
-                    if st.button("💾 Save Notes", key=f"save_notes_{invoice}"):
-                        create_or_update_reconciliation(invoice=invoice, notes=notes)
-                        st.success("✅ Notes saved!")
+                        st.error("⚠️ File data missing!")
+                    if st.button("🗑️ Clear", key=f"clear_asn_{selected_invoice}", use_container_width=True):
+                        clear_asn_data(selected_invoice)
                         st.rerun()
+                else:
+                    asn_file = st.file_uploader("Upload", key=f"asn_{selected_invoice}", type=['xlsx', 'xls', 'csv', 'txt', 'pdf'])
+                    if asn_file:
+                        st.info(f"{asn_file.name} ({asn_file.size} bytes)")
+                        if st.button("💾 Save", key=f"save_asn_{selected_invoice}", type="primary", use_container_width=True):
+                            asn_file.seek(0)
+                            result = create_or_update_reconciliation(invoice=selected_invoice, asn_uploaded=True, asn_filename=asn_file.name, asn_file_data=asn_file.read(), asn_upload_date=datetime.utcnow())
+                            if result:
+                                st.success(f"✅ Saved! ID:{result.id}")
+                                st.rerun()
+                            else:
+                                st.error("❌ Failed to save")
 
-            st.markdown("<br>", unsafe_allow_html=True)
+            with col2:
+                st.markdown("#### 🔢 IMEI/Serial File")
+                if has_imei:
+                    st.success(f"✅ {recon.imei_serial_filename}")
+                    if recon.imei_serial_file_data:
+                        st.caption(f"{len(recon.imei_serial_file_data)} bytes")
+                        st.download_button("⬇️ Download", recon.imei_serial_file_data, recon.imei_serial_filename, key=f"dl_imei_{selected_invoice}", use_container_width=True)
+                    else:
+                        st.error("⚠️ File data missing!")
+                    if st.button("🗑️ Clear", key=f"clear_imei_{selected_invoice}", use_container_width=True):
+                        clear_imei_serial_data(selected_invoice)
+                        st.rerun()
+                else:
+                    imei_file = st.file_uploader("Upload", key=f"imei_{selected_invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
+                    if imei_file:
+                        imei_file.seek(0)
+                        try:
+                            count = len([l for l in imei_file.read().decode('utf-8').split('\n') if l.strip()])
+                            imei_file.seek(0)
+                            st.info(f"{imei_file.name} ({count} entries)")
+                        except:
+                            count = None
+                        if st.button("💾 Save", key=f"save_imei_{selected_invoice}", type="primary", use_container_width=True):
+                            imei_file.seek(0)
+                            result = create_or_update_reconciliation(invoice=selected_invoice, imei_serial_uploaded=True, imei_serial_filename=imei_file.name, imei_serial_file_data=imei_file.read(), imei_serial_upload_date=datetime.utcnow(), imei_serial_count=count)
+                            if result:
+                                st.success(f"✅ Saved! ID:{result.id}")
+                                st.rerun()
+                            else:
+                                st.error("❌ Failed to save")
 
+            # Notes
+            st.markdown("---")
+            st.markdown("#### 📝 Notes")
+            notes = st.text_area("", value=recon.notes if recon and recon.notes else "", height=100, key=f"notes_{selected_invoice}")
+            if st.button("💾 Save Notes", key=f"save_notes_{selected_invoice}"):
+                create_or_update_reconciliation(invoice=selected_invoice, notes=notes)
+                st.success("✅ Saved!")
+                st.rerun()
+
+        else:
+            # Grid view - show all orders as compact cards
+            st.markdown("### 📦 All Orders - Click to View")
+            st.markdown("---")
+
+            # Create 3-column grid
+            cards_per_row = 3
+            for i in range(0, len(all_invoices), cards_per_row):
+                cols = st.columns(cards_per_row)
+                for j, col in enumerate(cols):
+                    idx = i + j
+                    if idx >= len(all_invoices):
+                        break
+
+                    invoice = all_invoices[idx]
+                    recon = recon_dict.get(invoice)
+                    order_df = df[df['INVOICE'] == invoice]
+                    order_qty = order_df['QTY'].sum()
+
+                    has_asn = recon and recon.asn_uploaded
+                    has_imei = recon and recon.imei_serial_uploaded
+
+                    if has_asn and has_imei:
+                        status_icon = "✅"
+                        status_color = "#D1FAE5"
+                    elif has_asn:
+                        status_icon = "⚠️"
+                        status_color = "#FEF3C7"
+                    else:
+                        status_icon = "📋"
+                        status_color = "#DBEAFE"
+
+                    with col:
+                        # Compact card
+                        st.markdown(f"""
+                        <div style="background: white; padding: 1.2rem; border-radius: 10px; border: 2px solid #DEE2E6;
+                             box-shadow: 0 2px 4px rgba(0,0,0,0.08); height: 180px; cursor: pointer;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                                <h4 style="margin: 0; color: #2E86AB; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{invoice}</h4>
+                                <span style="font-size: 1.5rem;">{status_icon}</span>
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
+                                <p style="font-size: 1.3rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
+                            </div>
+                            <div style="background: {status_color}; padding: 0.3rem 0.8rem; border-radius: 15px; text-align: center; font-size: 0.75rem; font-weight: 600;">
+                                {"Complete" if has_asn and has_imei else "ASN Only" if has_asn else "Pending"}
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                        if st.button("View Details", key=f"card_{invoice}", use_container_width=True):
+                            st.session_state['selected_order_card'] = invoice
+                            st.rerun()
 if __name__ == "__main__":
     main()
