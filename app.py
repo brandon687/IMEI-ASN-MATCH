@@ -750,27 +750,11 @@ def main():
             st.markdown("---")
 
             # Metrics and Order Details Side by Side
-            col1, col2 = st.columns([2, 3])
+            col1, col2 = st.columns([1, 4])
 
             with col1:
-                # Compact metrics
+                # Compact square metrics
                 st.markdown("### 📊 Summary")
-
-                # Total Units
-                st.markdown(f"""
-                <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2E86AB;">
-                    <p style="color: #6C757D; margin: 0; font-size: 0.85rem;">Total Units</p>
-                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # Unique Models
-                st.markdown(f"""
-                <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #A23B72;">
-                    <p style="color: #6C757D; margin: 0; font-size: 0.85rem;">Unique Models</p>
-                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{unique_models}</p>
-                </div>
-                """, unsafe_allow_html=True)
 
                 # IMEI Comparison: ON ASN vs EXPECTED
                 if has_asn and recon.asn_file_data:
@@ -792,16 +776,27 @@ def main():
                     border_color = "#C73E1D"  # Red - missing
                     status_icon = "❌"
 
+                # Small square cards
                 st.markdown(f"""
-                <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid {border_color};">
-                    <p style="color: #6C757D; margin: 0 0 0.5rem 0; font-size: 0.85rem;">{status_icon} IMEI Comparison</p>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-                        <span style="font-size: 0.9rem; color: #6C757D;">ON ASN:</span>
-                        <span style="font-size: 1.3rem; font-weight: 700;">{on_asn_count:,}</span>
+                <div style="background: white; padding: 0.6rem; border-radius: 8px; margin-bottom: 0.4rem; border-left: 3px solid #2E86AB; min-height: 60px;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.7rem;">Total Units</p>
+                    <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
+                </div>
+
+                <div style="background: white; padding: 0.6rem; border-radius: 8px; margin-bottom: 0.4rem; border-left: 3px solid #A23B72; min-height: 60px;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.7rem;">Models</p>
+                    <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{unique_models}</p>
+                </div>
+
+                <div style="background: white; padding: 0.6rem; border-radius: 8px; border-left: 3px solid {border_color}; min-height: 80px;">
+                    <p style="color: #6C757D; margin: 0 0 0.3rem 0; font-size: 0.7rem;">{status_icon} Compare</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+                        <span style="font-size: 0.7rem; color: #6C757D;">ASN:</span>
+                        <span style="font-size: 1.1rem; font-weight: 700;">{on_asn_count}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size: 0.9rem; color: #6C757D;">EXPECTED:</span>
-                        <span style="font-size: 1.3rem; font-weight: 700;">{expected_count:,}</span>
+                        <span style="font-size: 0.7rem; color: #6C757D;">EXP:</span>
+                        <span style="font-size: 1.1rem; font-weight: 700;">{expected_count}</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
