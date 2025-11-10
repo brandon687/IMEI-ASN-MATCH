@@ -363,18 +363,18 @@ def create_copy_button(df, button_id):
         background-color: #2E86AB;
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 600;
         transition: all 0.2s;
         width: 100%;
-        height: 38px;
+        height: 26px;
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'">
     Copy
     </button>
-    <span id="{button_id}_status" style="margin-left: 10px; color: #06D6A0; font-weight: 600; font-size: 12px;"></span>
+    <span id="{button_id}_status" style="margin-left: 6px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
     <script>
         document.getElementById('{button_id}').addEventListener('click', function() {{
             const data = `{escaped_data}`;
@@ -789,7 +789,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=40)
+                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=30)
                     with btn_col2:
                         csv_data = model_gb_output.to_csv(index=False)
                         st.download_button(
@@ -818,7 +818,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=40)
+                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=30)
                     with btn_col2:
                         csv_data = model_only_output.to_csv(index=False)
                         st.download_button(
@@ -849,7 +849,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=40)
+                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=30)
                     with btn_col2:
                         csv_data = grade_mix_output.to_csv(index=False)
                         st.download_button(
