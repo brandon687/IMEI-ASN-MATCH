@@ -163,16 +163,32 @@ st.markdown("""
 
     /* Buttons */
     .stButton > button {
-        border-radius: 8px;
+        border-radius: 3px;
         font-weight: 600;
         border: none;
-        padding: 0.6rem 1.5rem;
+        padding: 0.2rem 0.4rem;
         transition: all 0.2s;
+        font-size: 10px;
+        line-height: 1.2;
+        height: auto;
+        text-transform: uppercase;
     }
 
     .stButton > button:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Download buttons specifically */
+    .stDownloadButton > button {
+        border-radius: 3px;
+        font-weight: 600;
+        border: none;
+        padding: 0.2rem 0.4rem;
+        font-size: 10px;
+        line-height: 1.2;
+        height: auto;
+        text-transform: uppercase;
     }
 
     /* Tabs */
@@ -363,16 +379,17 @@ def create_copy_button(df, button_id):
         background-color: #2E86AB;
         color: white;
         border: none;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
         cursor: pointer;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
         transition: all 0.2s;
         width: 100%;
-        height: 26px;
+        height: auto;
+        line-height: 1.2;
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'">
-    Copy
+    COPY
     </button>
     <span id="{button_id}_status" style="margin-left: 6px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
     <script>
@@ -793,7 +810,7 @@ def main():
                     with btn_col2:
                         csv_data = model_gb_output.to_csv(index=False)
                         st.download_button(
-                            "Download",
+                            "DOWNLOAD",
                             data=csv_data,
                             file_name=f"{selected_invoice}_model_gb.csv",
                             mime="text/csv",
@@ -822,7 +839,7 @@ def main():
                     with btn_col2:
                         csv_data = model_only_output.to_csv(index=False)
                         st.download_button(
-                            "Download",
+                            "DOWNLOAD",
                             data=csv_data,
                             file_name=f"{selected_invoice}_model.csv",
                             mime="text/csv",
@@ -853,7 +870,7 @@ def main():
                     with btn_col2:
                         csv_data = grade_mix_output.to_csv(index=False)
                         st.download_button(
-                            "Download",
+                            "DOWNLOAD",
                             data=csv_data,
                             file_name=f"{selected_invoice}_grade_breakdown.csv",
                             mime="text/csv",
