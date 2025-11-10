@@ -13,6 +13,7 @@ from database import (
     get_database_engine
 )
 from datetime import datetime
+from imei_extractor import extract_imeis_from_file, format_imeis_for_display
 
 # Page configuration
 st.set_page_config(
@@ -529,42 +530,27 @@ def main():
                                     st.rerun()
 
                     with col2:
-                        st.markdown("#### 🔢 IMEI/Serial File")
-                        has_imei = upload_recon and upload_recon.imei_serial_uploaded
+                        st.markdown("#### 🔢 Extracted IMEIs")
 
-                        if has_imei:
-                            st.success(f"✅ Uploaded: {upload_recon.imei_serial_filename}")
-                            if st.button("🗑️ Remove IMEI/Serial", key=f"remove_imei_{upload_invoice}"):
-                                if clear_imei_serial_data(upload_invoice):
-                                    st.success("IMEI/Serial removed!")
-                                    st.rerun()
+                        # Extract IMEIs from ASN file if available
+                        if has_asn and upload_recon.asn_file_data:
+                            imeis, count, error = extract_imeis_from_file(upload_recon.asn_file_data, upload_recon.asn_filename)
+
+                            if error:
+                                st.error(f"⚠️ {error}")
+                            elif imeis:
+                                st.success(f"✅ Found {count} IMEIs")
+                                imei_text = format_imeis_for_display(imeis)
+                                st.text_area(
+                                    "Copy IMEIs:",
+                                    value=imei_text,
+                                    height=200,
+                                    key=f"quick_imei_display_{upload_invoice}"
+                                )
+                            else:
+                                st.warning("⚠️ No IMEIs found")
                         else:
-                            imei_file = st.file_uploader("Choose IMEI/Serial file", key=f"quick_imei_{upload_invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
-                            if imei_file:
-                                # Try to count entries
-                                imei_file.seek(0)
-                                try:
-                                    content = imei_file.read().decode('utf-8')
-                                    count = len([line for line in content.split('\n') if line.strip()])
-                                    st.info(f"📊 Detected {count} entries")
-                                    imei_file.seek(0)
-                                except:
-                                    count = None
-
-                                if st.button("✅ Confirm Upload", key=f"confirm_imei_{upload_invoice}", type="primary"):
-                                    imei_file.seek(0)
-                                    imei_data = imei_file.read()
-                                    create_or_update_reconciliation(
-                                        invoice=upload_invoice,
-                                        imei_serial_uploaded=True,
-                                        imei_serial_filename=imei_file.name,
-                                        imei_serial_file_data=imei_data,
-                                        imei_serial_upload_date=datetime.utcnow(),
-                                        imei_serial_count=count
-                                    )
-                                    st.success("✅ IMEI/Serial uploaded successfully!")
-                                    st.session_state.pop('upload_order', None)
-                                    st.rerun()
+                            st.info("📄 Upload ASN file first")
 
                     # Close button
                     st.markdown("---")
@@ -814,35 +800,42 @@ def main():
                                 st.error("❌ Failed to save")
 
             with col2:
-                st.markdown("#### 🔢 IMEI/Serial File")
-                if has_imei:
-                    st.success(f"✅ {recon.imei_serial_filename}")
-                    if recon.imei_serial_file_data:
-                        st.caption(f"{len(recon.imei_serial_file_data)} bytes")
-                        st.download_button("⬇️ Download", recon.imei_serial_file_data, recon.imei_serial_filename, key=f"dl_imei_{selected_invoice}", use_container_width=True)
+                st.markdown("#### 🔢 Extracted IMEIs")
+
+                # Extract IMEIs from ASN file if available
+                if has_asn and recon.asn_file_data:
+                    imeis, count, error = extract_imeis_from_file(recon.asn_file_data, recon.asn_filename)
+
+                    if error:
+                        st.error(f"⚠️ {error}")
+                    elif imeis:
+                        st.success(f"✅ Found {count} IMEIs")
+
+                        # Display IMEIs in copyable text area
+                        imei_text = format_imeis_for_display(imeis)
+                        st.text_area(
+                            "Copy IMEIs:",
+                            value=imei_text,
+                            height=300,
+                            key=f"imei_display_{selected_invoice}",
+                            help="Click inside and press Ctrl+A (Cmd+A on Mac) to select all, then Ctrl+C (Cmd+C) to copy"
+                        )
+
+                        # Download as text file
+                        st.download_button(
+                            "⬇️ Download IMEIs",
+                            data=imei_text,
+                            file_name=f"{selected_invoice}_IMEIs.txt",
+                            mime="text/plain",
+                            key=f"dl_imeis_{selected_invoice}",
+                            use_container_width=True
+                        )
                     else:
-                        st.error("⚠️ File data missing!")
-                    if st.button("🗑️ Clear", key=f"clear_imei_{selected_invoice}", use_container_width=True):
-                        clear_imei_serial_data(selected_invoice)
-                        st.rerun()
+                        st.warning("⚠️ No IMEIs found in ASN file")
+                        st.info("IMEIs must be 15 digits starting with 35")
                 else:
-                    imei_file = st.file_uploader("Upload", key=f"imei_{selected_invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
-                    if imei_file:
-                        imei_file.seek(0)
-                        try:
-                            count = len([l for l in imei_file.read().decode('utf-8').split('\n') if l.strip()])
-                            imei_file.seek(0)
-                            st.info(f"{imei_file.name} ({count} entries)")
-                        except:
-                            count = None
-                        if st.button("💾 Save", key=f"save_imei_{selected_invoice}", type="primary", use_container_width=True):
-                            imei_file.seek(0)
-                            result = create_or_update_reconciliation(invoice=selected_invoice, imei_serial_uploaded=True, imei_serial_filename=imei_file.name, imei_serial_file_data=imei_file.read(), imei_serial_upload_date=datetime.utcnow(), imei_serial_count=count)
-                            if result:
-                                st.success(f"✅ Saved! ID:{result.id}")
-                                st.rerun()
-                            else:
-                                st.error("❌ Failed to save")
+                    st.info("📄 Upload ASN file first to extract IMEIs")
+                    st.caption("IMEIs will be automatically extracted from columns like: SERIAL, IMEI, Serial No, etc.")
 
             # Notes
             st.markdown("---")
