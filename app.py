@@ -473,7 +473,7 @@ def main():
                         status_class = "status-pending"
                         status_text = "📋 Pending"
 
-                    col1, col2, col3, col4 = st.columns([3, 2, 2, 2])
+                    col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1.5, 1.5])
 
                     with col1:
                         st.markdown(f"**{invoice}**")
@@ -482,9 +482,94 @@ def main():
                     with col3:
                         st.markdown(f'<span class="status-badge {status_class}">{status_text}</span>', unsafe_allow_html=True)
                     with col4:
-                        if st.button("View Details", key=f"view_{invoice}"):
+                        if st.button("📤 Upload", key=f"upload_{invoice}", use_container_width=True):
+                            st.session_state['upload_order'] = invoice
+                            st.rerun()
+                    with col5:
+                        if st.button("View Details", key=f"view_{invoice}", use_container_width=True):
                             st.session_state['selected_order'] = invoice
                             st.rerun()
+
+                # Upload File Modal
+                if 'upload_order' in st.session_state and st.session_state['upload_order']:
+                    st.markdown("---")
+                    st.markdown(f"### 📤 Upload Files for Order: {st.session_state['upload_order']}")
+
+                    upload_invoice = st.session_state['upload_order']
+                    upload_recon = recon_dict.get(upload_invoice)
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        st.markdown("#### 📄 ASN File")
+                        has_asn = upload_recon and upload_recon.asn_uploaded
+
+                        if has_asn:
+                            st.success(f"✅ Uploaded: {upload_recon.asn_filename}")
+                            if st.button("🗑️ Remove ASN", key=f"remove_asn_{upload_invoice}"):
+                                if clear_asn_data(upload_invoice):
+                                    st.success("ASN removed!")
+                                    st.rerun()
+                        else:
+                            asn_file = st.file_uploader("Choose ASN file", key=f"quick_asn_{upload_invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
+                            if asn_file:
+                                if st.button("✅ Confirm Upload", key=f"confirm_asn_{upload_invoice}", type="primary"):
+                                    asn_file.seek(0)
+                                    asn_data = asn_file.read()
+                                    create_or_update_reconciliation(
+                                        invoice=upload_invoice,
+                                        asn_uploaded=True,
+                                        asn_filename=asn_file.name,
+                                        asn_file_data=asn_data,
+                                        asn_upload_date=datetime.utcnow()
+                                    )
+                                    st.success("✅ ASN uploaded successfully!")
+                                    st.session_state.pop('upload_order', None)
+                                    st.rerun()
+
+                    with col2:
+                        st.markdown("#### 🔢 IMEI/Serial File")
+                        has_imei = upload_recon and upload_recon.imei_serial_uploaded
+
+                        if has_imei:
+                            st.success(f"✅ Uploaded: {upload_recon.imei_serial_filename}")
+                            if st.button("🗑️ Remove IMEI/Serial", key=f"remove_imei_{upload_invoice}"):
+                                if clear_imei_serial_data(upload_invoice):
+                                    st.success("IMEI/Serial removed!")
+                                    st.rerun()
+                        else:
+                            imei_file = st.file_uploader("Choose IMEI/Serial file", key=f"quick_imei_{upload_invoice}", type=['xlsx', 'xls', 'csv', 'txt'])
+                            if imei_file:
+                                # Try to count entries
+                                imei_file.seek(0)
+                                try:
+                                    content = imei_file.read().decode('utf-8')
+                                    count = len([line for line in content.split('\n') if line.strip()])
+                                    st.info(f"📊 Detected {count} entries")
+                                    imei_file.seek(0)
+                                except:
+                                    count = None
+
+                                if st.button("✅ Confirm Upload", key=f"confirm_imei_{upload_invoice}", type="primary"):
+                                    imei_file.seek(0)
+                                    imei_data = imei_file.read()
+                                    create_or_update_reconciliation(
+                                        invoice=upload_invoice,
+                                        imei_serial_uploaded=True,
+                                        imei_serial_filename=imei_file.name,
+                                        imei_serial_file_data=imei_data,
+                                        imei_serial_upload_date=datetime.utcnow(),
+                                        imei_serial_count=count
+                                    )
+                                    st.success("✅ IMEI/Serial uploaded successfully!")
+                                    st.session_state.pop('upload_order', None)
+                                    st.rerun()
+
+                    # Close button
+                    st.markdown("---")
+                    if st.button("❌ Close Upload", use_container_width=False):
+                        st.session_state.pop('upload_order', None)
+                        st.rerun()
 
                 # Refresh button with stats
                 st.markdown("---")
