@@ -750,7 +750,7 @@ def main():
             st.markdown("---")
 
             # Metrics and Order Details Side by Side
-            col1, col2 = st.columns([1, 4])
+            col1, col2 = st.columns([1.5, 3.5])
 
             with col1:
                 # Compact square metrics
@@ -776,46 +776,50 @@ def main():
                     border_color = "#C73E1D"  # Red - missing
                     status_icon = "❌"
 
-                # Small square cards
+                # Bigger square cards
                 st.markdown(f"""
-                <div style="background: white; padding: 0.6rem; border-radius: 8px; margin-bottom: 0.4rem; border-left: 3px solid #2E86AB; min-height: 60px;">
-                    <p style="color: #6C757D; margin: 0; font-size: 0.7rem;">Total Units</p>
-                    <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
+                <div style="background: white; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2E86AB; min-height: 70px;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
+                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
                 </div>
 
-                <div style="background: white; padding: 0.6rem; border-radius: 8px; margin-bottom: 0.4rem; border-left: 3px solid #A23B72; min-height: 60px;">
-                    <p style="color: #6C757D; margin: 0; font-size: 0.7rem;">Models</p>
-                    <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{unique_models}</p>
+                <div style="background: white; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #A23B72; min-height: 70px;">
+                    <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Models</p>
+                    <p style="font-size: 1.8rem; font-weight: 700; margin: 0;">{unique_models}</p>
                 </div>
 
-                <div style="background: white; padding: 0.6rem; border-radius: 8px; border-left: 3px solid {border_color}; min-height: 80px;">
-                    <p style="color: #6C757D; margin: 0 0 0.3rem 0; font-size: 0.7rem;">{status_icon} Compare</p>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
-                        <span style="font-size: 0.7rem; color: #6C757D;">ASN:</span>
-                        <span style="font-size: 1.1rem; font-weight: 700;">{on_asn_count}</span>
+                <div style="background: white; padding: 0.8rem; border-radius: 8px; border-left: 4px solid {border_color}; min-height: 90px;">
+                    <p style="color: #6C757D; margin: 0 0 0.4rem 0; font-size: 0.75rem;">{status_icon} Compare</p>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                        <span style="font-size: 0.75rem; color: #6C757D;">ASN:</span>
+                        <span style="font-size: 1.3rem; font-weight: 700;">{on_asn_count}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size: 0.7rem; color: #6C757D;">EXP:</span>
-                        <span style="font-size: 1.1rem; font-weight: 700;">{expected_count}</span>
+                        <span style="font-size: 0.75rem; color: #6C757D;">EXP:</span>
+                        <span style="font-size: 1.3rem; font-weight: 700;">{expected_count}</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
 
             with col2:
-                # Compact Order Details Card
+                # Compact Order Details Card with proper column widths
                 st.markdown("### 📋 Expected Order Details")
-                st.markdown("""
-                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid #DEE2E6; max-height: 300px; overflow-y: auto;">
-                """, unsafe_allow_html=True)
+
+                # Configure column widths to reduce white space
+                column_config = {
+                    "MODEL": st.column_config.TextColumn("MODEL", width="medium"),
+                    "CAPACITY": st.column_config.TextColumn("CAPACITY", width="small"),
+                    "GRADE": st.column_config.TextColumn("GRADE", width="small"),
+                    "QTY": st.column_config.NumberColumn("QTY", width="small")
+                }
 
                 st.dataframe(
                     order_df[['MODEL', 'CAPACITY', 'GRADE', 'QTY']],
                     hide_index=True,
                     use_container_width=True,
-                    height=250
+                    height=250,
+                    column_config=column_config
                 )
-
-                st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown("---")
 
