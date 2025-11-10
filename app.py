@@ -487,7 +487,7 @@ def main():
                             st.rerun()
                     with col5:
                         if st.button("View Details", key=f"view_{invoice}", use_container_width=True):
-                            st.session_state['selected_order'] = invoice
+                            st.session_state['selected_order_detail'] = invoice
                             st.rerun()
 
                 # Upload File Modal
@@ -696,9 +696,9 @@ def main():
         with col2:
             components.html(create_copy_button(grade_mix_output, "copy_btn_3"), height=50)
 
-    # TAB 3: Order Details
+    # TAB 3: Order Details - Card View
     with tab3:
-        st.markdown("## 🔍 Order Details & File Management")
+        st.markdown("## 🔍 Order Details")
 
         df, error = load_data_from_sheets()
 
@@ -710,10 +710,15 @@ def main():
         reconciliations = get_all_reconciliations()
         recon_dict = {r.invoice: r for r in reconciliations}
 
-        # Order selector
-        selected_order = st.selectbox("Select Order:", all_invoices, key="detail_order_select")
+        # Check if a specific order is selected
+        if 'selected_order_detail' in st.session_state and st.session_state['selected_order_detail']:
+            selected_order = st.session_state['selected_order_detail']
 
-        if selected_order:
+            # Back button
+            if st.button("← Back to All Orders", key="back_to_orders"):
+                st.session_state.pop('selected_order_detail', None)
+                st.rerun()
+
             st.markdown("---")
 
             recon = recon_dict.get(selected_order)
@@ -766,7 +771,7 @@ def main():
 
             st.markdown("---")
 
-            # ASN Upload Section
+            # File Upload Section
             col1, col2 = st.columns(2)
 
             with col1:
@@ -787,9 +792,9 @@ def main():
                             st.success("Cleared!")
                             st.rerun()
                 else:
-                    asn_file = st.file_uploader("Upload ASN File", key=f"asn_upload_{selected_order}")
+                    asn_file = st.file_uploader("Upload ASN File", key=f"asn_upload_{selected_order}", type=['xlsx', 'xls', 'csv', 'txt'])
                     if asn_file:
-                        if st.button("💾 Save ASN", type="primary", use_container_width=True):
+                        if st.button("💾 Save ASN", type="primary", use_container_width=True, key=f"save_asn_{selected_order}"):
                             asn_file.seek(0)
                             asn_data = asn_file.read()
                             create_or_update_reconciliation(
@@ -820,7 +825,7 @@ def main():
                             st.success("Cleared!")
                             st.rerun()
                 else:
-                    imei_file = st.file_uploader("Upload IMEI/SERIAL File", key=f"imei_upload_{selected_order}")
+                    imei_file = st.file_uploader("Upload IMEI/SERIAL File", key=f"imei_upload_{selected_order}", type=['xlsx', 'xls', 'csv', 'txt'])
                     if imei_file:
                         # Try to count lines/rows
                         imei_file.seek(0)
@@ -832,7 +837,7 @@ def main():
                         except:
                             count = None
 
-                        if st.button("💾 Save IMEI/Serial", type="primary", use_container_width=True):
+                        if st.button("💾 Save IMEI/Serial", type="primary", use_container_width=True, key=f"save_imei_{selected_order}"):
                             imei_file.seek(0)
                             imei_data = imei_file.read()
                             create_or_update_reconciliation(
@@ -856,6 +861,73 @@ def main():
                 create_or_update_reconciliation(invoice=selected_order, notes=notes)
                 st.success("✅ Notes saved!")
                 st.rerun()
+
+        else:
+            # Show all orders as cards
+            st.markdown("### 📦 All Orders")
+            st.markdown("Click on any order card to view details and manage files")
+            st.markdown("---")
+
+            # Create card grid
+            for invoice in all_invoices:
+                recon = recon_dict.get(invoice)
+                order_df = df[df['INVOICE'] == invoice]
+                order_qty = order_df['QTY'].sum()
+                unique_models = order_df['MODEL'].nunique()
+
+                # Determine status
+                has_asn = recon and recon.asn_uploaded
+                has_imei = recon and recon.imei_serial_uploaded
+
+                if has_asn and has_imei:
+                    status_class = "status-complete"
+                    status_text = "✅ Complete"
+                    status_color = "#D1FAE5"
+                elif has_asn:
+                    status_class = "status-partial"
+                    status_text = "⚠️ ASN Only"
+                    status_color = "#FEF3C7"
+                else:
+                    status_class = "status-pending"
+                    status_text = "📋 Pending"
+                    status_color = "#DBEAFE"
+
+                # Create clickable card
+                card_html = f"""
+                <div class="order-card" style="cursor: pointer; background: white; padding: 1.5rem; border-radius: 12px;
+                     margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.08); border: 2px solid #DEE2E6;
+                     transition: all 0.2s;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <h3 style="margin: 0; color: #2E86AB; font-size: 1.3rem;">📦 {invoice}</h3>
+                        <span class="status-badge" style="background: {status_color}; padding: 0.4rem 1rem;
+                              border-radius: 20px; font-size: 0.875rem; font-weight: 600;">{status_text}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <div>
+                            <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">Total Units</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">Unique Models</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">{unique_models}</p>
+                        </div>
+                        <div>
+                            <p style="color: #6C757D; margin: 0; font-size: 0.875rem;">IMEI Count</p>
+                            <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">
+                                {f"{recon.imei_serial_count:,}" if has_imei and recon.imei_serial_count else "N/A"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                """
+                st.markdown(card_html, unsafe_allow_html=True)
+
+                # Button to select this order
+                if st.button("View Details →", key=f"card_view_{invoice}", use_container_width=True):
+                    st.session_state['selected_order_detail'] = invoice
+                    st.rerun()
+
+                st.markdown("<br>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
