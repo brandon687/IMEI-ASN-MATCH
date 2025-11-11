@@ -1052,9 +1052,12 @@ def main():
                         status_color = "#DBEAFE"
 
                     with col:
-                        # Clickable card using button
+                        # Status text
+                        status_text = 'COMPLETE' if has_asn and has_imei else 'ASN ONLY' if has_asn else 'PENDING'
+
+                        # Clickable card using button with formatted label
                         if st.button(
-                            label=f"{invoice}\n{order_qty:,} units\n{'Complete' if has_asn and has_imei else 'ASN Only' if has_asn else 'Pending'}",
+                            label=f"ORDER: {invoice}\nQTY: {order_qty:,} UNITS\nASN: {status_text}",
                             key=f"card_{invoice}",
                             use_container_width=True,
                             help=f"Click to view details for {invoice}"
@@ -1077,6 +1080,11 @@ def main():
                             transition: all 0.2s ease !important;
                             color: #212529 !important;
                             white-space: pre-line !important;
+                            font-size: 0.95rem !important;
+                            line-height: 2 !important;
+                            display: flex !important;
+                            align-items: flex-start !important;
+                            justify-content: flex-start !important;
                         }}
                         button[data-testid="baseButton-secondary"][aria-label*="{invoice}"]:hover {{
                             border-color: #2E86AB !important;
@@ -1262,9 +1270,9 @@ def main():
                         archived = archived_orders[idx]
 
                         with col:
-                            # Clickable card using button
+                            # Clickable card using button with formatted label
                             if st.button(
-                                label=f"{archived.invoice}\n{archived.total_qty:,} units\nArchived {archived.archived_date.strftime('%Y-%m-%d')}",
+                                label=f"ORDER: {archived.invoice}\nQTY: {archived.total_qty:,} UNITS\nARCHIVED: {archived.archived_date.strftime('%Y-%m-%d')}",
                                 key=f"archived_card_{archived.invoice}",
                                 use_container_width=True,
                                 help=f"Click to view details for archived order {archived.invoice}"
@@ -1287,6 +1295,11 @@ def main():
                                 transition: all 0.2s ease !important;
                                 color: #212529 !important;
                                 white-space: pre-line !important;
+                                font-size: 0.95rem !important;
+                                line-height: 2 !important;
+                                display: flex !important;
+                                align-items: flex-start !important;
+                                justify-content: flex-start !important;
                             }}
                             button[data-testid="baseButton-secondary"][aria-label*="{archived.invoice}"]:hover {{
                                 border-color: #2E86AB !important;
