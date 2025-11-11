@@ -1055,39 +1055,38 @@ def main():
                         # Status text
                         status_text = 'COMPLETE' if has_asn and has_imei else 'ASN ONLY' if has_asn else 'PENDING'
 
-                        # Create styled clickable card
-                        st.markdown(f"""
-                        <div style="
-                            background: white;
-                            padding: 1.2rem;
-                            border-radius: 10px;
-                            border: 2px solid #DEE2E6;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-                            height: 160px;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: flex-start;
-                            gap: 0.8rem;
-                            margin-bottom: 0.5rem;
-                            transition: all 0.2s ease;
-                        " onmouseover="this.style.borderColor='#2E86AB'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';"
-                           onmouseout="this.style.borderColor='#DEE2E6'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)';">
-                            <div style="font-size: 0.95rem; color: #212529; line-height: 1.6;">
-                                <div style="margin-bottom: 0.6rem;"><strong>ORDER:</strong> {invoice}</div>
-                                <div style="margin-bottom: 0.6rem;"><strong>QTY:</strong> {order_qty:,} UNITS</div>
-                                <div><strong>ASN:</strong> {status_text}</div>
+                        # Use form to make entire card clickable
+                        with st.form(key=f"form_{invoice}"):
+                            # Create styled clickable card
+                            st.markdown(f"""
+                            <div style="
+                                background: white;
+                                padding: 1.2rem;
+                                border-radius: 10px;
+                                border: 2px solid #DEE2E6;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                                height: 160px;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: flex-start;
+                                gap: 0.8rem;
+                                transition: all 0.2s ease;
+                                cursor: pointer;
+                            " onmouseover="this.style.borderColor='#2E86AB'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';"
+                               onmouseout="this.style.borderColor='#DEE2E6'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)';">
+                                <div style="font-size: 0.95rem; color: #212529; line-height: 1.6;">
+                                    <div style="margin-bottom: 0.6rem;"><strong>ORDER:</strong> {invoice}</div>
+                                    <div style="margin-bottom: 0.6rem;"><strong>QTY:</strong> {order_qty:,} UNITS</div>
+                                    <div><strong>ASN:</strong> {status_text}</div>
+                                </div>
                             </div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                            """, unsafe_allow_html=True)
 
-                        # Button below card for clicking
-                        if st.button(
-                            label="View Details",
-                            key=f"btn_{invoice}",
-                            use_container_width=True
-                        ):
-                            st.session_state['selected_order_card'] = invoice
-                            st.rerun()
+                            # Invisible submit button that fills the form
+                            submitted = st.form_submit_button("View", use_container_width=True, type="primary")
+                            if submitted:
+                                st.session_state['selected_order_card'] = invoice
+                                st.rerun()
 
     # TAB 3: Archived Orders
     with tab3:
@@ -1265,39 +1264,38 @@ def main():
                         archived = archived_orders[idx]
 
                         with col:
-                            # Create styled clickable card
-                            st.markdown(f"""
-                            <div style="
-                                background: white;
-                                padding: 1.2rem;
-                                border-radius: 10px;
-                                border: 2px solid #DEE2E6;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.08);
-                                height: 160px;
-                                display: flex;
-                                flex-direction: column;
-                                justify-content: flex-start;
-                                gap: 0.8rem;
-                                margin-bottom: 0.5rem;
-                                transition: all 0.2s ease;
-                            " onmouseover="this.style.borderColor='#2E86AB'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';"
-                               onmouseout="this.style.borderColor='#DEE2E6'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)';">
-                                <div style="font-size: 0.95rem; color: #212529; line-height: 1.6;">
-                                    <div style="margin-bottom: 0.6rem;"><strong>ORDER:</strong> {archived.invoice}</div>
-                                    <div style="margin-bottom: 0.6rem;"><strong>QTY:</strong> {archived.total_qty:,} UNITS</div>
-                                    <div><strong>ARCHIVED:</strong> {archived.archived_date.strftime('%Y-%m-%d')}</div>
+                            # Use form to make entire card clickable
+                            with st.form(key=f"archived_form_{archived.invoice}"):
+                                # Create styled clickable card
+                                st.markdown(f"""
+                                <div style="
+                                    background: white;
+                                    padding: 1.2rem;
+                                    border-radius: 10px;
+                                    border: 2px solid #DEE2E6;
+                                    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                                    height: 160px;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: flex-start;
+                                    gap: 0.8rem;
+                                    transition: all 0.2s ease;
+                                    cursor: pointer;
+                                " onmouseover="this.style.borderColor='#2E86AB'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.12)'; this.style.transform='translateY(-2px)';"
+                                   onmouseout="this.style.borderColor='#DEE2E6'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.08)'; this.style.transform='translateY(0)';">
+                                    <div style="font-size: 0.95rem; color: #212529; line-height: 1.6;">
+                                        <div style="margin-bottom: 0.6rem;"><strong>ORDER:</strong> {archived.invoice}</div>
+                                        <div style="margin-bottom: 0.6rem;"><strong>QTY:</strong> {archived.total_qty:,} UNITS</div>
+                                        <div><strong>ARCHIVED:</strong> {archived.archived_date.strftime('%Y-%m-%d')}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                                """, unsafe_allow_html=True)
 
-                            # Button below card for clicking
-                            if st.button(
-                                label="View Details",
-                                key=f"archived_btn_{archived.invoice}",
-                                use_container_width=True
-                            ):
-                                st.session_state['selected_archived_order'] = archived.invoice
-                                st.rerun()
+                                # Invisible submit button that fills the form
+                                submitted = st.form_submit_button("View", use_container_width=True, type="primary")
+                                if submitted:
+                                    st.session_state['selected_archived_order'] = archived.invoice
+                                    st.rerun()
 
 if __name__ == "__main__":
     main()
