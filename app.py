@@ -471,52 +471,9 @@ def process_selected_orders(df, selected_invoices):
 
     return model_gb_output, model_only_output, grade_mix_output
 
-def create_copy_button(df, button_id):
-    """Create a small circular copy to clipboard button"""
-    import re
-    # Sanitize button_id to remove spaces and special characters for valid HTML ID
-    safe_id = re.sub(r'[^a-zA-Z0-9_-]', '_', button_id)
-
-    tsv = df.to_csv(sep='\t', index=False)
-    escaped_data = tsv.replace('\\', '\\\\').replace('`', '\\`').replace('$', '\\$')
-
-    html = f"""
-    <button id="{safe_id}" style="
-        background-color: #2E86AB;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 10px;
-        font-weight: 600;
-        transition: all 0.2s;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        line-height: 1;
-    " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'" title="Copy to clipboard">
-    📋
-    </button>
-    <span id="{safe_id}_status" style="margin-left: 4px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
-    <script>
-        document.getElementById('{safe_id}').addEventListener('click', function() {{
-            const data = `{escaped_data}`;
-            navigator.clipboard.writeText(data).then(function() {{
-                document.getElementById('{safe_id}_status').textContent = '✓';
-                setTimeout(function() {{
-                    document.getElementById('{safe_id}_status').textContent = '';
-                }}, 2000);
-            }}).catch(function(err) {{
-                document.getElementById('{safe_id}_status').textContent = '✗';
-                console.error('Could not copy text: ', err);
-            }});
-        }});
-    </script>
-    """
-    return html
+def get_table_text(df):
+    """Convert dataframe to tab-separated text for copying"""
+    return df.to_csv(sep='\t', index=False)
 
 def main():
     # Header
@@ -901,10 +858,11 @@ def main():
             # Model + GB Breakdown - Expanded by default
             with st.expander(f"📊 MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
                 if model_gb_output is not None and not model_gb_output.empty:
-                    # Copy button at the top
-                    button_html = create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}")
-                    st.markdown(button_html, unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
+                    # Copy button
+                    if st.button("📋 COPY", key=f"copy_model_gb_{selected_invoice}", help="Copy to clipboard"):
+                        table_text = get_table_text(model_gb_output)
+                        st.code(table_text, language=None)
+                        st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
 
                     config_model_gb = {
                         "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=200),
@@ -923,10 +881,11 @@ def main():
             # Model + Qty Breakdown
             with st.expander(f"📱 MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
                 if model_only_output is not None and not model_only_output.empty:
-                    # Copy button at the top
-                    button_html = create_copy_button(model_only_output, f"copy_model_only_{selected_invoice}")
-                    st.markdown(button_html, unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
+                    # Copy button
+                    if st.button("📋 COPY", key=f"copy_model_only_{selected_invoice}", help="Copy to clipboard"):
+                        table_text = get_table_text(model_only_output)
+                        st.code(table_text, language=None)
+                        st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
 
                     config_model = {
                         "MODEL": st.column_config.TextColumn("MODEL", width=200),
@@ -945,10 +904,11 @@ def main():
             # Grade Breakdown
             with st.expander(f"🏷️ GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
                 if grade_mix_output is not None and not grade_mix_output.empty:
-                    # Copy button at the top
-                    button_html = create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}")
-                    st.markdown(button_html, unsafe_allow_html=True)
-                    st.markdown("<br>", unsafe_allow_html=True)
+                    # Copy button
+                    if st.button("📋 COPY", key=f"copy_grade_{selected_invoice}", help="Copy to clipboard"):
+                        table_text = get_table_text(grade_mix_output)
+                        st.code(table_text, language=None)
+                        st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
 
                     config_grade = {
                         "MODEL": st.column_config.TextColumn("MODEL", width=150),
