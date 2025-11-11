@@ -476,13 +476,8 @@ def get_table_text(df):
     return df.to_csv(sep='\t', index=False)
 
 def main():
-    # Header
-    st.markdown("""
-    <div class="main-header">
-        <h1>🔢 IMEI/ASN Match</h1>
-        <p>Match IMEI/Serial numbers to ASN orders with intelligent tracking</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Header with logo
+    st.image("assets/logo.png", width=400)
 
     # Initialize database
     init_database()
