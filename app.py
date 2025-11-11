@@ -730,25 +730,49 @@ def main():
             else:
                 st.markdown('<span class="status-badge status-pending" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #DBEAFE; color: #1E40AF;">⚠️ No ASN</span>', unsafe_allow_html=True)
 
-            # Archive button directly below status (with controlled width)
-            archive_col1, archive_col2, archive_col3 = st.columns([1, 2, 2])
-            with archive_col1:
-                if st.button("📦 Archive", key=f"archive_{selected_invoice}", use_container_width=True):
-                    # Prepare order data for archiving
-                    order_data_list = order_df.to_dict('records')
-                    result = archive_order(
-                        invoice=selected_invoice,
-                        order_data=order_data_list,
-                        total_qty=order_qty,
-                        unique_models=unique_models,
-                        notes=recon.notes if recon else None
-                    )
-                    if result:
-                        st.success("✅ Order archived!")
-                        st.session_state['selected_order_card'] = None
-                        st.rerun()
-                    else:
-                        st.error("❌ Failed to archive")
+            # Archive button - styled as badge matching ASN status
+            st.markdown(f"""
+            <style>
+            /* Archive button badge styling - scoped to specific button */
+            button[data-testid="baseButton-primary"][aria-label*="Archive"] {{
+                display: inline-block !important;
+                padding: 0.3rem 0.8rem !important;
+                border-radius: 15px !important;
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+                background: #E3F2FD !important;
+                color: #1565C0 !important;
+                border: 2px solid #90CAF9 !important;
+                transition: all 0.2s !important;
+                min-height: auto !important;
+                height: auto !important;
+                text-transform: none !important;
+                box-shadow: none !important;
+            }}
+            button[data-testid="baseButton-primary"][aria-label*="Archive"]:hover {{
+                background: #BBDEFB !important;
+                border-color: #64B5F6 !important;
+                transform: translateY(-1px);
+            }}
+            </style>
+            """, unsafe_allow_html=True)
+
+            if st.button("📦 Archive Order", key=f"archive_{selected_invoice}", type="primary"):
+                # Prepare order data for archiving
+                order_data_list = order_df.to_dict('records')
+                result = archive_order(
+                    invoice=selected_invoice,
+                    order_data=order_data_list,
+                    total_qty=order_qty,
+                    unique_models=unique_models,
+                    notes=recon.notes if recon else None
+                )
+                if result:
+                    st.success("✅ Order archived!")
+                    st.session_state['selected_order_card'] = None
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to archive")
 
             st.markdown("---")
 
