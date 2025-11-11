@@ -574,7 +574,7 @@ def main():
                         status_class = "status-pending"
                         status_text = "📋 Pending"
 
-                    col1, col2, col3, col4, col5 = st.columns([2.5, 1.5, 1.8, 0.9, 1.1])
+                    col1, col2, col3, col4 = st.columns([2.5, 1.5, 1.8, 0.9])
 
                     with col1:
                         st.markdown(f"**{invoice}**")
@@ -585,10 +585,6 @@ def main():
                     with col4:
                         if st.button("📤", key=f"upload_{invoice}", use_container_width=True, help="Upload files"):
                             st.session_state['upload_order'] = invoice
-                            st.rerun()
-                    with col5:
-                        if st.button("View", key=f"view_{invoice}", use_container_width=True):
-                            st.session_state['selected_order_detail'] = invoice
                             st.rerun()
 
                 # Upload File Modal
@@ -939,7 +935,7 @@ def main():
                         clear_asn_data(selected_invoice)
                         st.rerun()
                 else:
-                    asn_file = st.file_uploader("Upload", key=f"asn_{selected_invoice}", type=['xlsx', 'xls', 'csv', 'txt', 'pdf'])
+                    asn_file = st.file_uploader("Drag and drop ASN file here", key=f"asn_{selected_invoice}", type=['xlsx', 'xls', 'csv', 'txt', 'pdf'], label_visibility="collapsed")
                     if asn_file:
                         st.info(f"{asn_file.name} ({asn_file.size} bytes)")
                         if st.button("💾 Save", key=f"save_asn_{selected_invoice}", type="primary", use_container_width=True):
