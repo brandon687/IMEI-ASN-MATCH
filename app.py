@@ -473,11 +473,15 @@ def process_selected_orders(df, selected_invoices):
 
 def create_copy_button(df, button_id):
     """Create a small circular copy to clipboard button"""
+    import re
+    # Sanitize button_id to remove spaces and special characters for valid HTML ID
+    safe_id = re.sub(r'[^a-zA-Z0-9_-]', '_', button_id)
+
     tsv = df.to_csv(sep='\t', index=False)
     escaped_data = tsv.replace('\\', '\\\\').replace('`', '\\`').replace('$', '\\$')
 
     html = f"""
-    <button id="{button_id}" style="
+    <button id="{safe_id}" style="
         background-color: #2E86AB;
         color: white;
         border: none;
@@ -496,17 +500,17 @@ def create_copy_button(df, button_id):
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'" title="Copy to clipboard">
     📋
     </button>
-    <span id="{button_id}_status" style="margin-left: 4px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
+    <span id="{safe_id}_status" style="margin-left: 4px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
     <script>
-        document.getElementById('{button_id}').addEventListener('click', function() {{
+        document.getElementById('{safe_id}').addEventListener('click', function() {{
             const data = `{escaped_data}`;
             navigator.clipboard.writeText(data).then(function() {{
-                document.getElementById('{button_id}_status').textContent = '✓';
+                document.getElementById('{safe_id}_status').textContent = '✓';
                 setTimeout(function() {{
-                    document.getElementById('{button_id}_status').textContent = '';
+                    document.getElementById('{safe_id}_status').textContent = '';
                 }}, 2000);
             }}).catch(function(err) {{
-                document.getElementById('{button_id}_status').textContent = '✗';
+                document.getElementById('{safe_id}_status').textContent = '✗';
                 console.error('Could not copy text: ', err);
             }});
         }});
