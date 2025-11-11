@@ -915,11 +915,8 @@ def main():
             with col_copy1:
                 if model_gb_output is not None and not model_gb_output.empty:
                     # Small circular copy button
-                    st.markdown(f"""
-                        <div style="margin-top: 0px;">
-                            {create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}")}
-                        </div>
-                    """, unsafe_allow_html=True)
+                    button_html = create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}")
+                    st.markdown(button_html, unsafe_allow_html=True)
 
             # Model + Qty Breakdown
             col_header2, col_copy2 = st.columns([0.95, 0.05])
@@ -941,11 +938,8 @@ def main():
                         st.info("No data available")
             with col_copy2:
                 if model_only_output is not None and not model_only_output.empty:
-                    st.markdown(f"""
-                        <div style="margin-top: 0px;">
-                            {create_copy_button(model_only_output, f"copy_model_only_{selected_invoice}")}
-                        </div>
-                    """, unsafe_allow_html=True)
+                    button_html = create_copy_button(model_only_output, f"copy_model_only_{selected_invoice}")
+                    st.markdown(button_html, unsafe_allow_html=True)
 
             # Grade Breakdown
             col_header3, col_copy3 = st.columns([0.95, 0.05])
@@ -969,11 +963,8 @@ def main():
                         st.info("No data available")
             with col_copy3:
                 if grade_mix_output is not None and not grade_mix_output.empty:
-                    st.markdown(f"""
-                        <div style="margin-top: 0px;">
-                            {create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}")}
-                        </div>
-                    """, unsafe_allow_html=True)
+                    button_html = create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}")
+                    st.markdown(button_html, unsafe_allow_html=True)
 
             st.markdown("---")
 
