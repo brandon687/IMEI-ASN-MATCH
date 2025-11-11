@@ -721,17 +721,18 @@ def main():
             has_asn = recon and recon.asn_uploaded
             has_imei = recon and recon.imei_serial_uploaded
 
-            # REDESIGNED HEADER - Compact with actions grouped
+            # REDESIGNED HEADER - Archive button directly below ASN status
             st.markdown(f"### 📦 {selected_invoice}")
 
-            # Status and Archive button in compact inline layout
-            action_col1, action_col2 = st.columns([1, 1])
-            with action_col1:
-                if has_asn:
-                    st.markdown('<span class="status-badge status-complete" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #D1FAE5; color: #065F46;">✅ ASN Uploaded</span>', unsafe_allow_html=True)
-                else:
-                    st.markdown('<span class="status-badge status-pending" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #DBEAFE; color: #1E40AF;">⚠️ No ASN</span>', unsafe_allow_html=True)
-            with action_col2:
+            # ASN Status badge
+            if has_asn:
+                st.markdown('<span class="status-badge status-complete" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #D1FAE5; color: #065F46;">✅ ASN Uploaded</span>', unsafe_allow_html=True)
+            else:
+                st.markdown('<span class="status-badge status-pending" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #DBEAFE; color: #1E40AF;">⚠️ No ASN</span>', unsafe_allow_html=True)
+
+            # Archive button directly below status (with controlled width)
+            archive_col1, archive_col2, archive_col3 = st.columns([1, 2, 2])
+            with archive_col1:
                 if st.button("📦 Archive", key=f"archive_{selected_invoice}", use_container_width=True):
                     # Prepare order data for archiving
                     order_data_list = order_df.to_dict('records')
