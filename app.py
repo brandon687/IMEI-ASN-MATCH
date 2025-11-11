@@ -30,7 +30,7 @@ st.set_page_config(
 # Modern Custom CSS
 st.markdown("""
 <style>
-    /* Main theme colors */
+    /* Main theme colors and responsive base */
     :root {
         --primary-color: #2E86AB;
         --secondary-color: #A23B72;
@@ -43,6 +43,13 @@ st.markdown("""
         --text-secondary: #6C757D;
         --border-color: #DEE2E6;
     }
+
+    /* Responsive typography */
+    h1 { font-size: clamp(1.5rem, 2.5vw, 2.5rem); }
+    h2 { font-size: clamp(1.25rem, 2vw, 2rem); }
+    h3 { font-size: clamp(1.1rem, 1.5vw, 1.5rem); }
+    h4 { font-size: clamp(0.95rem, 1.2vw, 1.25rem); }
+    p { font-size: clamp(0.875rem, 1vw, 1rem); }
 
     /* Remove default padding */
     .block-container {
@@ -161,16 +168,17 @@ st.markdown("""
         color: #1E40AF;
     }
 
-    /* Buttons */
+    /* Responsive Buttons */
     .stButton > button {
-        border-radius: 3px;
+        border-radius: 4px;
         font-weight: 600;
         border: none;
-        padding: 0.2rem 0.4rem;
+        padding: 0.35rem 0.75rem;
         transition: all 0.2s;
-        font-size: 10px;
-        line-height: 1.2;
+        font-size: clamp(10px, 0.75vw, 14px);
+        line-height: 1.4;
         height: auto;
+        min-height: 32px;
         text-transform: uppercase;
     }
 
@@ -181,14 +189,35 @@ st.markdown("""
 
     /* Download buttons specifically */
     .stDownloadButton > button {
-        border-radius: 3px;
+        border-radius: 4px;
         font-weight: 600;
         border: none;
-        padding: 0.2rem 0.4rem;
-        font-size: 10px;
-        line-height: 1.2;
+        padding: 0.35rem 0.75rem;
+        font-size: clamp(10px, 0.75vw, 14px);
+        line-height: 1.4;
         height: auto;
+        min-height: 32px;
         text-transform: uppercase;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        .stButton > button,
+        .stDownloadButton > button {
+            font-size: 12px;
+            padding: 0.5rem 1rem;
+            min-height: 38px;
+        }
+    }
+
+    /* Large screen adjustments */
+    @media (min-width: 2560px) {
+        .stButton > button,
+        .stDownloadButton > button {
+            font-size: 14px;
+            padding: 0.5rem 1.25rem;
+            min-height: 40px;
+        }
     }
 
     /* Tabs */
@@ -215,7 +244,7 @@ st.markdown("""
         border-color: var(--primary-color);
     }
 
-    /* DataFrames */
+    /* Responsive DataFrames */
     .stDataFrame {
         border-radius: 8px;
         overflow: hidden;
@@ -223,17 +252,37 @@ st.markdown("""
 
     /* Compact table styling - reduce cell padding and spacing */
     .stDataFrame table {
-        font-size: 0.85rem;
+        font-size: clamp(0.75rem, 0.9vw, 0.95rem);
     }
 
     .stDataFrame th, .stDataFrame td {
-        padding: 0.3rem 0.5rem !important;
+        padding: clamp(0.2rem, 0.4vw, 0.5rem) clamp(0.3rem, 0.5vw, 0.75rem) !important;
         white-space: nowrap;
     }
 
     .stDataFrame thead th {
-        padding: 0.4rem 0.5rem !important;
+        padding: clamp(0.3rem, 0.5vw, 0.6rem) clamp(0.3rem, 0.5vw, 0.75rem) !important;
         font-weight: 600;
+    }
+
+    /* Mobile table adjustments */
+    @media (max-width: 768px) {
+        .stDataFrame table {
+            font-size: 0.75rem;
+        }
+        .stDataFrame th, .stDataFrame td {
+            padding: 0.25rem 0.4rem !important;
+        }
+    }
+
+    /* Large screen table adjustments */
+    @media (min-width: 2560px) {
+        .stDataFrame table {
+            font-size: 1rem;
+        }
+        .stDataFrame th, .stDataFrame td {
+            padding: 0.5rem 0.75rem !important;
+        }
     }
 
     /* File uploader */
@@ -379,19 +428,20 @@ def create_copy_button(df, button_id):
         background-color: #2E86AB;
         color: white;
         border: none;
-        padding: 0.2rem 0.4rem;
-        border-radius: 3px;
+        padding: 0.35rem 0.75rem;
+        border-radius: 4px;
         cursor: pointer;
-        font-size: 10px;
+        font-size: clamp(10px, 0.75vw, 14px);
         font-weight: 600;
         transition: all 0.2s;
         width: 100%;
         height: auto;
-        line-height: 1.2;
+        min-height: 32px;
+        line-height: 1.4;
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'">
     COPY
     </button>
-    <span id="{button_id}_status" style="margin-left: 6px; color: #06D6A0; font-weight: 600; font-size: 10px;"></span>
+    <span id="{button_id}_status" style="margin-left: 8px; color: #06D6A0; font-weight: 600; font-size: clamp(10px, 0.75vw, 12px);"></span>
     <script>
         document.getElementById('{button_id}').addEventListener('click', function() {{
             const data = `{escaped_data}`;
@@ -806,7 +856,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=30)
+                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=50)
                     with btn_col2:
                         csv_data = model_gb_output.to_csv(index=False)
                         st.download_button(
@@ -835,7 +885,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=30)
+                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=50)
                     with btn_col2:
                         csv_data = model_only_output.to_csv(index=False)
                         st.download_button(
@@ -866,7 +916,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=30)
+                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=50)
                     with btn_col2:
                         csv_data = grade_mix_output.to_csv(index=False)
                         st.download_button(
