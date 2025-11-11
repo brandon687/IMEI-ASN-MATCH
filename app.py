@@ -1052,27 +1052,39 @@ def main():
                         status_color = "#DBEAFE"
 
                     with col:
-                        # Compact card
-                        st.markdown(f"""
-                        <div style="background: white; padding: 1.2rem; border-radius: 10px; border: 2px solid #DEE2E6;
-                             box-shadow: 0 2px 4px rgba(0,0,0,0.08); height: 180px; cursor: pointer;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                                <h4 style="margin: 0; color: #2E86AB; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{invoice}</h4>
-                                <span style="font-size: 1.5rem;">{status_icon}</span>
-                            </div>
-                            <div style="margin-bottom: 0.5rem;">
-                                <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
-                                <p style="font-size: 1.3rem; font-weight: 700; margin: 0;">{order_qty:,}</p>
-                            </div>
-                            <div style="background: {status_color}; padding: 0.3rem 0.8rem; border-radius: 15px; text-align: center; font-size: 0.75rem; font-weight: 600;">
-                                {"Complete" if has_asn and has_imei else "ASN Only" if has_asn else "Pending"}
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-
-                        if st.button("View Details", key=f"card_{invoice}", use_container_width=True):
+                        # Clickable card using button
+                        if st.button(
+                            label=f"{invoice}\n{order_qty:,} units\n{'Complete' if has_asn and has_imei else 'ASN Only' if has_asn else 'Pending'}",
+                            key=f"card_{invoice}",
+                            use_container_width=True,
+                            help=f"Click to view details for {invoice}"
+                        ):
                             st.session_state['selected_order_card'] = invoice
                             st.rerun()
+
+                        # Visual card overlay (for styling)
+                        st.markdown(f"""
+                        <style>
+                        button[data-testid="baseButton-secondary"][aria-label*="{invoice}"] {{
+                            background: white !important;
+                            padding: 1.2rem !important;
+                            border-radius: 10px !important;
+                            border: 2px solid #DEE2E6 !important;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+                            height: 180px !important;
+                            cursor: pointer !important;
+                            text-align: left !important;
+                            transition: all 0.2s ease !important;
+                            color: #212529 !important;
+                            white-space: pre-line !important;
+                        }}
+                        button[data-testid="baseButton-secondary"][aria-label*="{invoice}"]:hover {{
+                            border-color: #2E86AB !important;
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.12) !important;
+                            transform: translateY(-2px) !important;
+                        }}
+                        </style>
+                        """, unsafe_allow_html=True)
 
     # TAB 3: Archived Orders
     with tab3:
@@ -1250,27 +1262,39 @@ def main():
                         archived = archived_orders[idx]
 
                         with col:
-                            # Compact card
-                            st.markdown(f"""
-                            <div style="background: white; padding: 1.2rem; border-radius: 10px; border: 2px solid #DEE2E6;
-                                 box-shadow: 0 2px 4px rgba(0,0,0,0.08); height: 180px; cursor: pointer;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                                    <h4 style="margin: 0; color: #2E86AB; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{archived.invoice}</h4>
-                                    <span style="font-size: 1.5rem;">📦</span>
-                                </div>
-                                <div style="margin-bottom: 0.5rem;">
-                                    <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
-                                    <p style="font-size: 1.3rem; font-weight: 700; margin: 0;">{archived.total_qty:,}</p>
-                                </div>
-                                <div style="background: #E3F2FD; padding: 0.3rem 0.8rem; border-radius: 15px; text-align: center; font-size: 0.75rem; font-weight: 600;">
-                                    Archived {archived.archived_date.strftime('%Y-%m-%d')}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-
-                            if st.button("View Details", key=f"archived_card_{archived.invoice}", use_container_width=True):
+                            # Clickable card using button
+                            if st.button(
+                                label=f"{archived.invoice}\n{archived.total_qty:,} units\nArchived {archived.archived_date.strftime('%Y-%m-%d')}",
+                                key=f"archived_card_{archived.invoice}",
+                                use_container_width=True,
+                                help=f"Click to view details for archived order {archived.invoice}"
+                            ):
                                 st.session_state['selected_archived_order'] = archived.invoice
                                 st.rerun()
+
+                            # Visual card overlay (for styling)
+                            st.markdown(f"""
+                            <style>
+                            button[data-testid="baseButton-secondary"][aria-label*="{archived.invoice}"] {{
+                                background: white !important;
+                                padding: 1.2rem !important;
+                                border-radius: 10px !important;
+                                border: 2px solid #DEE2E6 !important;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.08) !important;
+                                height: 180px !important;
+                                cursor: pointer !important;
+                                text-align: left !important;
+                                transition: all 0.2s ease !important;
+                                color: #212529 !important;
+                                white-space: pre-line !important;
+                            }}
+                            button[data-testid="baseButton-secondary"][aria-label*="{archived.invoice}"]:hover {{
+                                border-color: #2E86AB !important;
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.12) !important;
+                                transform: translateY(-2px) !important;
+                            }}
+                            </style>
+                            """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
