@@ -293,6 +293,59 @@ st.markdown("""
         padding: 2rem;
     }
 
+    /* Expander/Accordion styling for breakdowns */
+    [data-testid="stExpander"] {
+        border: none;
+        margin-bottom: 1rem;
+    }
+
+    [data-testid="stExpander"] summary {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    [data-testid="stExpander"] summary:hover {
+        border-color: var(--primary-color);
+        background: var(--bg-color);
+    }
+
+    [data-testid="stExpander"][open] summary {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-color: var(--primary-color);
+        background: var(--bg-color);
+    }
+
+    [data-testid="stExpander"] > div:last-child {
+        border: 2px solid var(--primary-color);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        padding: 1rem;
+        background: white;
+    }
+
+    /* Mobile expander adjustments */
+    @media (max-width: 768px) {
+        [data-testid="stExpander"] summary {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+        }
+    }
+
+    /* Large screen expander adjustments */
+    @media (min-width: 2560px) {
+        [data-testid="stExpander"] summary {
+            font-size: 1.1rem;
+            padding: 1.25rem 2rem;
+        }
+    }
+
     /* Alerts */
     .stAlert {
         border-radius: 8px;
@@ -714,17 +767,18 @@ def main():
             has_asn = recon and recon.asn_uploaded
             has_imei = recon and recon.imei_serial_uploaded
 
-            # Header
-            col1, col2, col3 = st.columns([2, 1, 1])
-            with col1:
-                st.markdown(f"### 📦 {selected_invoice}")
-            with col2:
+            # REDESIGNED HEADER - Compact with actions grouped
+            st.markdown(f"### 📦 {selected_invoice}")
+
+            # Status and Archive button in compact inline layout
+            action_col1, action_col2 = st.columns([1, 1])
+            with action_col1:
                 if has_asn:
-                    st.success("✅ ASN Uploaded")
+                    st.markdown('<span class="status-badge status-complete" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #D1FAE5; color: #065F46;">✅ ASN Uploaded</span>', unsafe_allow_html=True)
                 else:
-                    st.warning("⚠️ No ASN")
-            with col3:
-                if st.button("📦 Archive Order", key=f"archive_{selected_invoice}", use_container_width=True):
+                    st.markdown('<span class="status-badge status-pending" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #DBEAFE; color: #1E40AF;">⚠️ No ASN</span>', unsafe_allow_html=True)
+            with action_col2:
+                if st.button("📦 Archive", key=f"archive_{selected_invoice}", use_container_width=True):
                     # Prepare order data for archiving
                     order_data_list = order_df.to_dict('records')
                     result = archive_order(
@@ -834,57 +888,62 @@ def main():
             # Process breakdowns for this order
             model_gb_output, model_only_output, grade_mix_output = process_selected_orders(df, [selected_invoice])
 
-            # Three breakdown tables in compact card layout
+            # REDESIGNED BREAKDOWNS - Vertical Accordion Layout
             st.markdown("### 📊 Breakdowns")
+            st.caption("Expand each section to view detailed breakdown tables")
 
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                st.markdown("#### 📊 MODEL + GB")
-                if model_gb_output is not None:
+            # Model + GB Breakdown - Expanded by default
+            with st.expander(f"📊 MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
+                if model_gb_output is not None and not model_gb_output.empty:
                     config_model_gb = {
-                        "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=150),
-                        "QTY": st.column_config.NumberColumn("QTY", width=60)
+                        "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=None),
+                        "QTY": st.column_config.NumberColumn("QTY", width=120)
                     }
                     st.dataframe(
                         model_gb_output,
                         hide_index=True,
-                        use_container_width=False,
-                        height=300,
+                        use_container_width=True,
+                        height=min(300, len(model_gb_output) * 35 + 50),
                         column_config=config_model_gb
                     )
+                else:
+                    st.info("No data available")
 
-            with col2:
-                st.markdown("#### 📱 MODEL + QTY")
-                if model_only_output is not None:
+            # Model + Qty Breakdown
+            with st.expander(f"📱 MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
+                if model_only_output is not None and not model_only_output.empty:
                     config_model = {
-                        "MODEL": st.column_config.TextColumn("MODEL", width=120),
-                        "QTY": st.column_config.NumberColumn("QTY", width=60)
+                        "MODEL": st.column_config.TextColumn("MODEL", width=None),
+                        "QTY": st.column_config.NumberColumn("QTY", width=120)
                     }
                     st.dataframe(
                         model_only_output,
                         hide_index=True,
-                        use_container_width=False,
-                        height=300,
+                        use_container_width=True,
+                        height=min(300, len(model_only_output) * 35 + 50),
                         column_config=config_model
                     )
+                else:
+                    st.info("No data available")
 
-            with col3:
-                st.markdown("#### 🏷️ Grade Breakdown")
-                if grade_mix_output is not None:
+            # Grade Breakdown
+            with st.expander(f"🏷️ GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
+                if grade_mix_output is not None and not grade_mix_output.empty:
                     config_grade = {
-                        "MODEL": st.column_config.TextColumn("MODEL", width=100),
-                        "CAPACITY": st.column_config.TextColumn("CAPACITY", width=70),
-                        "GRADE": st.column_config.TextColumn("GRADE", width=60),
-                        "QTY": st.column_config.NumberColumn("QTY", width=50)
+                        "MODEL": st.column_config.TextColumn("MODEL", width=None),
+                        "CAPACITY": st.column_config.TextColumn("CAPACITY", width=120),
+                        "GRADE": st.column_config.TextColumn("GRADE", width=100),
+                        "QTY": st.column_config.NumberColumn("QTY", width=100)
                     }
                     st.dataframe(
                         grade_mix_output,
                         hide_index=True,
-                        use_container_width=False,
-                        height=300,
+                        use_container_width=True,
+                        height=min(300, len(grade_mix_output) * 35 + 50),
                         column_config=config_grade
                     )
+                else:
+                    st.info("No data available")
 
             st.markdown("---")
 
