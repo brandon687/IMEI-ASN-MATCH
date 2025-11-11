@@ -552,6 +552,19 @@ def main():
                 # Recent Orders Section
                 st.markdown("### Recent Orders")
 
+                # Add headers
+                header_col1, header_col2, header_col3, header_col4 = st.columns([2.5, 1.5, 1.8, 0.9])
+                with header_col1:
+                    st.markdown("**ORDER**")
+                with header_col2:
+                    st.markdown("**UNITS**")
+                with header_col3:
+                    st.markdown("**STATUS**")
+                with header_col4:
+                    st.markdown("**UPLOAD**")
+
+                st.markdown("---")
+
                 # Show recent 10 orders
                 recent_invoices = sorted(unique_invoices, reverse=True)[:10]
 
@@ -819,11 +832,11 @@ def main():
                 <div style="background: white; padding: 0.8rem; border-radius: 8px; border-left: 4px solid {border_color}; min-height: 90px;">
                     <p style="color: #6C757D; margin: 0 0 0.4rem 0; font-size: 0.75rem;">{status_icon} Compare</p>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
-                        <span style="font-size: 0.75rem; color: #6C757D;">ASN:</span>
+                        <span style="font-size: 0.75rem; color: #6C757D;">ASN QTY:</span>
                         <span style="font-size: 1.3rem; font-weight: 700;">{on_asn_count}</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size: 0.75rem; color: #6C757D;">EXP:</span>
+                        <span style="font-size: 0.75rem; color: #6C757D;">EXPECTED QTY:</span>
                         <span style="font-size: 1.3rem; font-weight: 700;">{expected_count}</span>
                     </div>
                 </div>
