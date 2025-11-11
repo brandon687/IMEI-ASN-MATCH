@@ -168,35 +168,35 @@ st.markdown("""
         color: #1E40AF;
     }
 
-    /* Responsive Buttons */
+    /* Compact Buttons */
     .stButton > button {
-        border-radius: 4px;
+        border-radius: 3px;
         font-weight: 600;
         border: none;
-        padding: 0.35rem 0.75rem;
+        padding: 0.15rem 0.4rem;
         transition: all 0.2s;
-        font-size: clamp(10px, 0.75vw, 14px);
-        line-height: 1.4;
+        font-size: 9px;
+        line-height: 1.2;
         height: auto;
-        min-height: 32px;
+        min-height: 20px;
         text-transform: uppercase;
     }
 
     .stButton > button:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
     /* Download buttons specifically */
     .stDownloadButton > button {
-        border-radius: 4px;
+        border-radius: 3px;
         font-weight: 600;
         border: none;
-        padding: 0.35rem 0.75rem;
-        font-size: clamp(10px, 0.75vw, 14px);
-        line-height: 1.4;
+        padding: 0.15rem 0.4rem;
+        font-size: 9px;
+        line-height: 1.2;
         height: auto;
-        min-height: 32px;
+        min-height: 20px;
         text-transform: uppercase;
     }
 
@@ -204,9 +204,9 @@ st.markdown("""
     @media (max-width: 768px) {
         .stButton > button,
         .stDownloadButton > button {
-            font-size: 12px;
-            padding: 0.5rem 1rem;
-            min-height: 38px;
+            font-size: 11px;
+            padding: 0.25rem 0.6rem;
+            min-height: 28px;
         }
     }
 
@@ -214,9 +214,9 @@ st.markdown("""
     @media (min-width: 2560px) {
         .stButton > button,
         .stDownloadButton > button {
-            font-size: 14px;
-            padding: 0.5rem 1.25rem;
-            min-height: 40px;
+            font-size: 10px;
+            padding: 0.2rem 0.5rem;
+            min-height: 24px;
         }
     }
 
@@ -428,20 +428,20 @@ def create_copy_button(df, button_id):
         background-color: #2E86AB;
         color: white;
         border: none;
-        padding: 0.35rem 0.75rem;
-        border-radius: 4px;
+        padding: 0.15rem 0.4rem;
+        border-radius: 3px;
         cursor: pointer;
-        font-size: clamp(10px, 0.75vw, 14px);
+        font-size: 9px;
         font-weight: 600;
         transition: all 0.2s;
         width: 100%;
         height: auto;
-        min-height: 32px;
-        line-height: 1.4;
+        min-height: 20px;
+        line-height: 1.2;
     " onmouseover="this.style.backgroundColor='#246A87'" onmouseout="this.style.backgroundColor='#2E86AB'">
     COPY
     </button>
-    <span id="{button_id}_status" style="margin-left: 8px; color: #06D6A0; font-weight: 600; font-size: clamp(10px, 0.75vw, 12px);"></span>
+    <span id="{button_id}_status" style="margin-left: 6px; color: #06D6A0; font-weight: 600; font-size: 9px;"></span>
     <script>
         document.getElementById('{button_id}').addEventListener('click', function() {{
             const data = `{escaped_data}`;
@@ -856,7 +856,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=50)
+                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=28)
                     with btn_col2:
                         csv_data = model_gb_output.to_csv(index=False)
                         st.download_button(
@@ -885,7 +885,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=50)
+                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=28)
                     with btn_col2:
                         csv_data = model_only_output.to_csv(index=False)
                         st.download_button(
@@ -916,7 +916,7 @@ def main():
                     # Compact buttons in two columns
                     btn_col1, btn_col2 = st.columns(2)
                     with btn_col1:
-                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=50)
+                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=28)
                     with btn_col2:
                         csv_data = grade_mix_output.to_csv(index=False)
                         st.download_button(
