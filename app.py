@@ -895,76 +895,72 @@ def main():
             st.caption("Expand each section to view detailed breakdown tables")
 
             # Model + GB Breakdown - Expanded by default
-            col_header1, col_copy1 = st.columns([0.95, 0.05])
-            with col_header1:
-                with st.expander(f"📊 MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
-                    if model_gb_output is not None and not model_gb_output.empty:
-                        config_model_gb = {
-                            "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=200),
-                            "QTY": st.column_config.NumberColumn("QTY", width=80)
-                        }
-                        st.dataframe(
-                            model_gb_output,
-                            hide_index=True,
-                            use_container_width=False,
-                            height=min(300, len(model_gb_output) * 35 + 50),
-                            column_config=config_model_gb
-                        )
-                    else:
-                        st.info("No data available")
-            with col_copy1:
+            with st.expander(f"📊 MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
                 if model_gb_output is not None and not model_gb_output.empty:
-                    # Small circular copy button
+                    # Copy button at the top
                     button_html = create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}")
                     st.markdown(button_html, unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    config_model_gb = {
+                        "MODEL_GB": st.column_config.TextColumn("MODEL + GB", width=200),
+                        "QTY": st.column_config.NumberColumn("QTY", width=80)
+                    }
+                    st.dataframe(
+                        model_gb_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=min(300, len(model_gb_output) * 35 + 50),
+                        column_config=config_model_gb
+                    )
+                else:
+                    st.info("No data available")
 
             # Model + Qty Breakdown
-            col_header2, col_copy2 = st.columns([0.95, 0.05])
-            with col_header2:
-                with st.expander(f"📱 MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
-                    if model_only_output is not None and not model_only_output.empty:
-                        config_model = {
-                            "MODEL": st.column_config.TextColumn("MODEL", width=200),
-                            "QTY": st.column_config.NumberColumn("QTY", width=80)
-                        }
-                        st.dataframe(
-                            model_only_output,
-                            hide_index=True,
-                            use_container_width=False,
-                            height=min(300, len(model_only_output) * 35 + 50),
-                            column_config=config_model
-                        )
-                    else:
-                        st.info("No data available")
-            with col_copy2:
+            with st.expander(f"📱 MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
                 if model_only_output is not None and not model_only_output.empty:
+                    # Copy button at the top
                     button_html = create_copy_button(model_only_output, f"copy_model_only_{selected_invoice}")
                     st.markdown(button_html, unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    config_model = {
+                        "MODEL": st.column_config.TextColumn("MODEL", width=200),
+                        "QTY": st.column_config.NumberColumn("QTY", width=80)
+                    }
+                    st.dataframe(
+                        model_only_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=min(300, len(model_only_output) * 35 + 50),
+                        column_config=config_model
+                    )
+                else:
+                    st.info("No data available")
 
             # Grade Breakdown
-            col_header3, col_copy3 = st.columns([0.95, 0.05])
-            with col_header3:
-                with st.expander(f"🏷️ GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
-                    if grade_mix_output is not None and not grade_mix_output.empty:
-                        config_grade = {
-                            "MODEL": st.column_config.TextColumn("MODEL", width=150),
-                            "CAPACITY": st.column_config.TextColumn("CAPACITY", width=90),
-                            "GRADE": st.column_config.TextColumn("GRADE", width=80),
-                            "QTY": st.column_config.NumberColumn("QTY", width=80)
-                        }
-                        st.dataframe(
-                            grade_mix_output,
-                            hide_index=True,
-                            use_container_width=False,
-                            height=min(300, len(grade_mix_output) * 35 + 50),
-                            column_config=config_grade
-                        )
-                    else:
-                        st.info("No data available")
-            with col_copy3:
+            with st.expander(f"🏷️ GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
                 if grade_mix_output is not None and not grade_mix_output.empty:
+                    # Copy button at the top
                     button_html = create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}")
                     st.markdown(button_html, unsafe_allow_html=True)
+                    st.markdown("<br>", unsafe_allow_html=True)
+
+                    config_grade = {
+                        "MODEL": st.column_config.TextColumn("MODEL", width=150),
+                        "CAPACITY": st.column_config.TextColumn("CAPACITY", width=90),
+                        "GRADE": st.column_config.TextColumn("GRADE", width=80),
+                        "QTY": st.column_config.NumberColumn("QTY", width=80)
+                    }
+                    st.dataframe(
+                        grade_mix_output,
+                        hide_index=True,
+                        use_container_width=False,
+                        height=min(300, len(grade_mix_output) * 35 + 50),
+                        column_config=config_grade
+                    )
+                else:
+                    st.info("No data available")
 
             st.markdown("---")
 
