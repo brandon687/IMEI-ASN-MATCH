@@ -853,20 +853,6 @@ def main():
                         height=300,
                         column_config=config_model_gb
                     )
-                    # Compact buttons in two columns
-                    btn_col1, btn_col2 = st.columns(2)
-                    with btn_col1:
-                        components.html(create_copy_button(model_gb_output, f"copy_model_gb_{selected_invoice}"), height=28)
-                    with btn_col2:
-                        csv_data = model_gb_output.to_csv(index=False)
-                        st.download_button(
-                            "DOWNLOAD",
-                            data=csv_data,
-                            file_name=f"{selected_invoice}_model_gb.csv",
-                            mime="text/csv",
-                            key=f"dl_model_gb_{selected_invoice}",
-                            use_container_width=True
-                        )
 
             with col2:
                 st.markdown("#### 📱 MODEL + QTY")
@@ -882,20 +868,6 @@ def main():
                         height=300,
                         column_config=config_model
                     )
-                    # Compact buttons in two columns
-                    btn_col1, btn_col2 = st.columns(2)
-                    with btn_col1:
-                        components.html(create_copy_button(model_only_output, f"copy_model_{selected_invoice}"), height=28)
-                    with btn_col2:
-                        csv_data = model_only_output.to_csv(index=False)
-                        st.download_button(
-                            "DOWNLOAD",
-                            data=csv_data,
-                            file_name=f"{selected_invoice}_model.csv",
-                            mime="text/csv",
-                            key=f"dl_model_{selected_invoice}",
-                            use_container_width=True
-                        )
 
             with col3:
                 st.markdown("#### 🏷️ Grade Breakdown")
@@ -913,20 +885,6 @@ def main():
                         height=300,
                         column_config=config_grade
                     )
-                    # Compact buttons in two columns
-                    btn_col1, btn_col2 = st.columns(2)
-                    with btn_col1:
-                        components.html(create_copy_button(grade_mix_output, f"copy_grade_{selected_invoice}"), height=28)
-                    with btn_col2:
-                        csv_data = grade_mix_output.to_csv(index=False)
-                        st.download_button(
-                            "DOWNLOAD",
-                            data=csv_data,
-                            file_name=f"{selected_invoice}_grade_breakdown.csv",
-                            mime="text/csv",
-                            key=f"dl_grade_{selected_invoice}",
-                            use_container_width=True
-                        )
 
             st.markdown("---")
 
