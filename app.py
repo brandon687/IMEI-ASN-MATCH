@@ -482,12 +482,12 @@ def main():
     # Initialize database
     init_database()
 
-    # Navigation tabs
-    tab1, tab2, tab3 = st.tabs(["🏠 Dashboard", "🔍 Order Details", "📦 Archived"])
+    # Navigation tabs - professional styling
+    tab1, tab2, tab3 = st.tabs(["Dashboard", "Order Details", "Archived"])
 
     # TAB 1: Dashboard
     with tab1:
-        st.markdown("## 📊 Overview")
+        st.markdown("## Overview")
 
         # Load data in background
         df, error = load_data_from_sheets()
@@ -550,7 +550,7 @@ def main():
                 st.markdown("---")
 
                 # Recent Orders Section
-                st.markdown("### 📦 Recent Orders")
+                st.markdown("### Recent Orders")
 
                 # Show recent 10 orders
                 recent_invoices = sorted(unique_invoices, reverse=True)[:10]
@@ -625,7 +625,7 @@ def main():
                                     st.rerun()
 
                     with col2:
-                        st.markdown("#### 🔢 Extracted IMEIs")
+                        st.markdown("#### Extracted IMEIs")
 
                         # Extract IMEIs from ASN file if available
                         if has_asn and upload_recon.asn_file_data:
@@ -669,7 +669,7 @@ def main():
 
     # TAB 2: Order Details - Grid Card View
     with tab2:
-        st.markdown("## 🔍 Order Details")
+        st.markdown("## Order Details")
 
         df, error = load_data_from_sheets()
 
@@ -721,43 +721,44 @@ def main():
             has_asn = recon and recon.asn_uploaded
             has_imei = recon and recon.imei_serial_uploaded
 
-            # REDESIGNED HEADER - Archive button directly below ASN status
-            st.markdown(f"### 📦 {selected_invoice}")
+            # Professional header - no emojis
+            st.markdown(f"### {selected_invoice}")
 
-            # ASN Status badge
+            # ASN Status badge - clean professional style
             if has_asn:
-                st.markdown('<span class="status-badge status-complete" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #D1FAE5; color: #065F46;">✅ ASN Uploaded</span>', unsafe_allow_html=True)
+                st.markdown('<span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: #E8F5E9; color: #2E7D32; text-transform: uppercase; letter-spacing: 0.5px;">ASN Uploaded</span>', unsafe_allow_html=True)
             else:
-                st.markdown('<span class="status-badge status-pending" style="display: inline-block; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; background: #DBEAFE; color: #1E40AF;">⚠️ No ASN</span>', unsafe_allow_html=True)
+                st.markdown('<span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; background: #FFF3E0; color: #E65100; text-transform: uppercase; letter-spacing: 0.5px;">No ASN</span>', unsafe_allow_html=True)
 
-            # Archive button - styled as badge matching ASN status
+            # Archive button - minimal professional style
             st.markdown(f"""
             <style>
-            /* Archive button badge styling - scoped to specific button */
+            /* Professional Archive button styling */
             button[data-testid="baseButton-primary"][aria-label*="Archive"] {{
                 display: inline-block !important;
-                padding: 0.3rem 0.8rem !important;
-                border-radius: 15px !important;
-                font-size: 0.85rem !important;
+                padding: 0.4rem 1rem !important;
+                border-radius: 4px !important;
+                font-size: 0.75rem !important;
                 font-weight: 600 !important;
-                background: #E3F2FD !important;
-                color: #1565C0 !important;
-                border: 2px solid #90CAF9 !important;
+                background: white !important;
+                color: #424242 !important;
+                border: 1px solid #E0E0E0 !important;
                 transition: all 0.2s !important;
                 min-height: auto !important;
                 height: auto !important;
-                text-transform: none !important;
-                box-shadow: none !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             }}
             button[data-testid="baseButton-primary"][aria-label*="Archive"]:hover {{
-                background: #BBDEFB !important;
-                border-color: #64B5F6 !important;
-                transform: translateY(-1px);
+                background: #FAFAFA !important;
+                border-color: #BDBDBD !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
             }}
             </style>
             """, unsafe_allow_html=True)
 
-            if st.button("📦 Archive Order", key=f"archive_{selected_invoice}", type="primary"):
+            if st.button("Archive Order", key=f"archive_{selected_invoice}", type="primary"):
                 # Prepare order data for archiving
                 order_data_list = order_df.to_dict('records')
                 result = archive_order(
@@ -781,7 +782,7 @@ def main():
 
             with col1:
                 # Compact square metrics
-                st.markdown("### 📊 Summary")
+                st.markdown("### Summary")
 
                 # IMEI Comparison: ON ASN vs EXPECTED
                 if has_asn and recon.asn_file_data:
@@ -830,7 +831,7 @@ def main():
 
             with col2:
                 # Compact Order Details Card with proper column widths
-                st.markdown("### 📋 Expected Order Details")
+                st.markdown("### Expected Order Details")
 
                 # Define columns to display in order
                 display_columns = ['INVOICE', 'MODEL', 'CAPACITY', 'COLOR', 'LOCKED', 'GRADE', 'UNIT', 'TOTAL', 'QTY', 'STATUS', 'SUPPLIER', 'FALLOUT RATE']
@@ -867,15 +868,15 @@ def main():
             # Process breakdowns for this order
             model_gb_output, model_only_output, grade_mix_output = process_selected_orders(df, [selected_invoice])
 
-            # REDESIGNED BREAKDOWNS - Vertical Accordion Layout with narrow tables
-            st.markdown("### 📊 Breakdowns")
-            st.caption("Expand each section to view detailed breakdown tables")
+            # Professional breakdowns section - no emojis
+            st.markdown("### Breakdowns")
+            st.caption(f"{len(model_gb_output) + len(model_only_output) + len(grade_mix_output)} total items")
 
             # Model + GB Breakdown - Expanded by default
-            with st.expander(f"📊 MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
+            with st.expander(f"MODEL + GB BREAKDOWN ({len(model_gb_output)} items)", expanded=True):
                 if model_gb_output is not None and not model_gb_output.empty:
-                    # Copy button
-                    if st.button("📋 COPY", key=f"copy_model_gb_{selected_invoice}", help="Copy to clipboard"):
+                    # Copy button - minimal style
+                    if st.button("Copy", key=f"copy_model_gb_{selected_invoice}", help="Copy to clipboard"):
                         table_text = get_table_text(model_gb_output)
                         st.code(table_text, language=None)
                         st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
@@ -895,10 +896,10 @@ def main():
                     st.info("No data available")
 
             # Model + Qty Breakdown
-            with st.expander(f"📱 MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
+            with st.expander(f"MODEL + QTY BREAKDOWN ({len(model_only_output)} items)", expanded=False):
                 if model_only_output is not None and not model_only_output.empty:
                     # Copy button
-                    if st.button("📋 COPY", key=f"copy_model_only_{selected_invoice}", help="Copy to clipboard"):
+                    if st.button("Copy", key=f"copy_model_only_{selected_invoice}", help="Copy to clipboard"):
                         table_text = get_table_text(model_only_output)
                         st.code(table_text, language=None)
                         st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
@@ -918,10 +919,10 @@ def main():
                     st.info("No data available")
 
             # Grade Breakdown
-            with st.expander(f"🏷️ GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
+            with st.expander(f"GRADE BREAKDOWN ({len(grade_mix_output)} items)", expanded=False):
                 if grade_mix_output is not None and not grade_mix_output.empty:
                     # Copy button
-                    if st.button("📋 COPY", key=f"copy_grade_{selected_invoice}", help="Copy to clipboard"):
+                    if st.button("Copy", key=f"copy_grade_{selected_invoice}", help="Copy to clipboard"):
                         table_text = get_table_text(grade_mix_output)
                         st.code(table_text, language=None)
                         st.success("✓ Copied! Select the text above and copy with Ctrl+C (Cmd+C on Mac)")
@@ -1011,7 +1012,7 @@ def main():
 
             # Notes
             st.markdown("---")
-            st.markdown("#### 📝 Notes")
+            st.markdown("#### Notes")
             notes = st.text_area("", value=recon.notes if recon and recon.notes else "", height=100, key=f"notes_{selected_invoice}")
             if st.button("💾 Save Notes", key=f"save_notes_{selected_invoice}"):
                 create_or_update_reconciliation(invoice=selected_invoice, notes=notes)
@@ -1020,7 +1021,7 @@ def main():
 
         else:
             # Grid view - show all orders as compact cards
-            st.markdown("### 📦 All Orders - Click to View")
+            st.markdown("### All Orders")
             st.markdown("---")
 
             # Create 3-column grid
@@ -1075,7 +1076,7 @@ def main():
 
     # TAB 3: Archived Orders
     with tab3:
-        st.markdown("## 📦 Archived Orders")
+        st.markdown("## Archived Orders")
         st.info("📋 Archived orders are preserved here even after they are removed from the Google Sheet source.")
 
         archived_orders = get_all_archived_orders()
@@ -1123,7 +1124,7 @@ def main():
                 col1, col2 = st.columns([1.5, 3.5])
 
                 with col1:
-                    st.markdown("### 📊 Summary")
+                    st.markdown("### Summary")
                     st.markdown(f"""
                     <div style="background: white; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 4px solid #2E86AB; min-height: 70px;">
                         <p style="color: #6C757D; margin: 0; font-size: 0.75rem;">Total Units</p>
@@ -1180,7 +1181,7 @@ def main():
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    st.markdown("#### 📤 ASN File")
+                    st.markdown("#### ASN File")
                     if archived.asn_filename and archived.asn_file_data:
                         st.success(f"✅ {archived.asn_filename}")
                         st.download_button(
@@ -1199,7 +1200,7 @@ def main():
                         st.info("No ASN file archived")
 
                 with col2:
-                    st.markdown("#### 🔢 Extracted IMEIs")
+                    st.markdown("#### Extracted IMEIs")
                     if archived.asn_file_data:
                         imeis, count, error = extract_imeis_from_file(archived.asn_file_data, archived.asn_filename)
 
@@ -1229,7 +1230,7 @@ def main():
                 # Notes
                 if archived.notes:
                     st.markdown("---")
-                    st.markdown("#### 📝 Notes")
+                    st.markdown("#### Notes")
                     st.text_area("", value=archived.notes, height=100, key=f"archived_notes_{archived.invoice}", disabled=True)
 
             else:
