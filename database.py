@@ -217,6 +217,9 @@ def create_or_update_reconciliation(invoice, **kwargs):
         
         status.updated_at = datetime.utcnow()
         session.commit()
+        session.refresh(status)
+        # Make the object accessible after session close
+        session.expunge(status)
         return status
     finally:
         session.close()
